@@ -70,7 +70,7 @@ private:
     uint32_t mFormatFlags;
     // mIsKeyFrame[i] is true if ith canvas can be constructed without decoding any prior frames.
     bool* mIsKeyFrame;
-    jobject mRawByteBuffer;
+    jobject mRawByteBuffer = nullptr;
 };
 
 // Produces frames of a possibly-animated WebP file for display.

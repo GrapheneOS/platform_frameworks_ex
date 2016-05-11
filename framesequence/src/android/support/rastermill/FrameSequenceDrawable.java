@@ -31,8 +31,10 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.os.SystemClock;
+import android.util.Log;
 
 public class FrameSequenceDrawable extends Drawable implements Animatable, Runnable {
+    private static final String TAG = "FrameSequence";
     /**
      * These constants are chosen to imitate common browser behavior for WebP/GIF.
      * If other decoders are added, this behavior should be moved into the WebP/GIF decoders.
@@ -174,7 +176,15 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
                 mState = STATE_DECODING;
             }
             int lastFrame = nextFrame - 2;
-            long invalidateTimeMs = mFrameSequenceState.getFrame(nextFrame, bitmap, lastFrame);
+            boolean exceptionDuringDecode = false;
+            long invalidateTimeMs = 0;
+            try {
+                invalidateTimeMs = mFrameSequenceState.getFrame(nextFrame, bitmap, lastFrame);
+            } catch(Exception e) {
+                // Exception during decode: continue, but delay next frame indefinitely.
+                Log.e(TAG, "exception during decode: " + e);
+                exceptionDuringDecode = true;
+            }
 
             if (invalidateTimeMs < MIN_DELAY_MS) {
                 invalidateTimeMs = DEFAULT_DELAY_MS;
@@ -188,7 +198,7 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
                     mBackBitmap = null;
                 } else if (mNextFrameToDecode >= 0 && mState == STATE_DECODING) {
                     schedule = true;
-                    mNextSwap = invalidateTimeMs + mLastSwap;
+                    mNextSwap = exceptionDuringDecode ? Long.MAX_VALUE : invalidateTimeMs + mLastSwap;
                     mState = STATE_WAITING_TO_SWAP;
                 }
             }

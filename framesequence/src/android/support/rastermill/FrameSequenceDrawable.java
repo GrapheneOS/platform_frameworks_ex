@@ -103,9 +103,9 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
     }
 
     /**
-     * Loop only once.
+     * Loop a finite number of times, which can be set using setLoopCount. Default to loop once.
      */
-    public static final int LOOP_ONCE = 1;
+    public static final int LOOP_FINITE = 1;
 
     /**
      * Loop continuously. The OnFinishedListener will never be called.
@@ -118,12 +118,27 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
     public static final int LOOP_DEFAULT = 3;
 
     /**
+     * Loop only once.
+     *
+     * @deprecated Use LOOP_FINITE instead.
+     */
+    @Deprecated
+    public static final int LOOP_ONCE = LOOP_FINITE;
+
+    /**
      * Define looping behavior of frame sequence.
      *
-     * Must be one of LOOP_ONCE, LOOP_INF, or LOOP_DEFAULT
+     * Must be one of LOOP_ONCE, LOOP_INF, LOOP_DEFAULT, or LOOP_FINITE.
      */
     public void setLoopBehavior(int loopBehavior) {
         mLoopBehavior = loopBehavior;
+    }
+
+    /**
+     * Set the number of loops in LOOP_FINITE mode. The number must be a postive integer.
+     */
+    public void setLoopCount(int loopCount) {
+        mLoopCount = loopCount;
     }
 
     private final FrameSequence mFrameSequence;
@@ -151,6 +166,7 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
     private int mState;
     private int mCurrentLoop;
     private int mLoopBehavior = LOOP_DEFAULT;
+    private int mLoopCount = 1;
 
     private long mLastSwap;
     private long mNextSwap;
@@ -361,7 +377,7 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
                 boolean continueLooping = true;
                 if (mNextFrameToDecode == mFrameSequence.getFrameCount() - 1) {
                     mCurrentLoop++;
-                    if ((mLoopBehavior == LOOP_ONCE && mCurrentLoop == 1) ||
+                    if ((mLoopBehavior == LOOP_ONCE && mCurrentLoop == mLoopCount) ||
                             (mLoopBehavior == LOOP_DEFAULT && mCurrentLoop == mFrameSequence.getDefaultLoopCount())) {
                         continueLooping = false;
                     }

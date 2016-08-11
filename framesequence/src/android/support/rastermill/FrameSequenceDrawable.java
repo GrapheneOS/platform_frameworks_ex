@@ -147,7 +147,7 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
     private final Paint mPaint;
     private BitmapShader mFrontBitmapShader;
     private BitmapShader mBackBitmapShader;
-     private final Rect mSrcRect;
+    private final Rect mSrcRect;
     private boolean mCircleMaskEnabled;
 
     //Protects the fields below
@@ -172,6 +172,8 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
     private long mNextSwap;
     private int mNextFrameToDecode;
     private OnFinishedListener mOnFinishedListener;
+
+    private RectF mTempRectF = new RectF();
 
     /**
      * Runs on decoding thread, only modifies mBackBitmap's pixels
@@ -289,9 +291,16 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
      * Masking is done with BitmapShader, incurring minimal additional draw cost.
      */
     public final void setCircleMaskEnabled(boolean circleMaskEnabled) {
-        mCircleMaskEnabled = circleMaskEnabled;
-        // Anti alias only necessary when using circular mask
-        mPaint.setAntiAlias(circleMaskEnabled);
+        if (mCircleMaskEnabled != circleMaskEnabled) {
+            mCircleMaskEnabled = circleMaskEnabled;
+            // Anti alias only necessary when using circular mask
+            mPaint.setAntiAlias(circleMaskEnabled);
+            invalidateSelf();
+        }
+    }
+
+    public final boolean getCircleMaskEnabled() {
+        return mCircleMaskEnabled;
     }
 
     private void checkDestroyedLocked() {
@@ -392,12 +401,31 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
         }
 
         if (mCircleMaskEnabled) {
-            Rect bounds = getBounds();
+            final Rect bounds = getBounds();
+            final int bitmapWidth = getIntrinsicWidth();
+            final int bitmapHeight = getIntrinsicHeight();
+            final float scaleX = 1.0f * bounds.width() / bitmapWidth;
+            final float scaleY = 1.0f * bounds.height() / bitmapHeight;
+
+            canvas.save();
+            // scale and translate to account for bounds, so we can operate in intrinsic
+            // width/height (so it's valid to use an unscaled bitmap shader)
+            canvas.translate(bounds.left, bounds.top);
+            canvas.scale(scaleX, scaleY);
+
+            final float unscaledCircleDiameter = Math.min(bounds.width(), bounds.height());
+            final float scaledDiameterX = unscaledCircleDiameter / scaleX;
+            final float scaledDiameterY = unscaledCircleDiameter / scaleY;
+
+            // Want to draw a circle, but we have to compensate for canvas scale
+            mTempRectF.set(
+                    (bitmapWidth - scaledDiameterX) / 2.0f,
+                    (bitmapHeight - scaledDiameterY) / 2.0f,
+                    (bitmapWidth + scaledDiameterX) / 2.0f,
+                    (bitmapHeight + scaledDiameterY) / 2.0f);
             mPaint.setShader(mFrontBitmapShader);
-            float width = bounds.width();
-            float height = bounds.height();
-            float circleRadius = (Math.min(width, height)) / 2f;
-            canvas.drawCircle(width / 2f, height / 2f, circleRadius, mPaint);
+            canvas.drawOval(mTempRectF, mPaint);
+            canvas.restore();
         } else {
             mPaint.setShader(null);
             canvas.drawBitmap(mFrontBitmap, mSrcRect, getBounds(), mPaint);

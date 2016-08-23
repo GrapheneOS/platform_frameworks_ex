@@ -231,9 +231,13 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
         }
     };
 
-    private Runnable mCallbackRunnable = new Runnable() {
+    private Runnable mFinishedCallbackRunnable = new Runnable() {
         @Override
         public void run() {
+            synchronized (mLock) {
+                mNextFrameToDecode = -1;
+                mState = 0;
+            }
             if (mOnFinishedListener != null) {
                 mOnFinishedListener.onFinished(FrameSequenceDrawable.this);
             }
@@ -386,8 +390,8 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
                 boolean continueLooping = true;
                 if (mNextFrameToDecode == mFrameSequence.getFrameCount() - 1) {
                     mCurrentLoop++;
-                    if ((mLoopBehavior == LOOP_ONCE && mCurrentLoop == mLoopCount) ||
-                            (mLoopBehavior == LOOP_DEFAULT && mCurrentLoop == mFrameSequence.getDefaultLoopCount())) {
+                    if ((mLoopBehavior == LOOP_FINITE && mCurrentLoop >= mLoopCount) ||
+                            (mLoopBehavior == LOOP_DEFAULT && mCurrentLoop >= mFrameSequence.getDefaultLoopCount())) {
                         continueLooping = false;
                     }
                 }
@@ -395,7 +399,7 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
                 if (continueLooping) {
                     scheduleDecodeLocked();
                 } else {
-                    scheduleSelf(mCallbackRunnable, 0);
+                    scheduleSelf(mFinishedCallbackRunnable, 0);
                 }
             }
         }

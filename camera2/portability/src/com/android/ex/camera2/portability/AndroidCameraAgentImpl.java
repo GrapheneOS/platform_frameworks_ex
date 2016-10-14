@@ -678,6 +678,9 @@ class AndroidCameraAgentImpl extends CameraAgent {
             if (mCapabilities.supports(CameraCapabilities.Feature.AUTO_WHITE_BALANCE_LOCK)) {
                 parameters.setAutoWhiteBalanceLock(settings.isAutoWhiteBalanceLocked());
             }
+            if (settings.getWhiteBalance() != null) {
+                parameters.setWhiteBalance(stringifier.stringify(settings.getWhiteBalance()));
+            }
             if (mCapabilities.supports(CameraCapabilities.Feature.FOCUS_AREA)) {
                 if (settings.getFocusAreas().size() != 0) {
                     parameters.setFocusAreas(settings.getFocusAreas());

@@ -390,8 +390,8 @@ public class FrameSequenceDrawable extends Drawable implements Animatable, Runna
                 boolean continueLooping = true;
                 if (mNextFrameToDecode == mFrameSequence.getFrameCount() - 1) {
                     mCurrentLoop++;
-                    if ((mLoopBehavior == LOOP_FINITE && mCurrentLoop >= mLoopCount) ||
-                            (mLoopBehavior == LOOP_DEFAULT && mCurrentLoop >= mFrameSequence.getDefaultLoopCount())) {
+                    if ((mLoopBehavior == LOOP_FINITE && mCurrentLoop == mLoopCount) ||
+                            (mLoopBehavior == LOOP_DEFAULT && mCurrentLoop == mFrameSequence.getDefaultLoopCount())) {
                         continueLooping = false;
                     }
                 }

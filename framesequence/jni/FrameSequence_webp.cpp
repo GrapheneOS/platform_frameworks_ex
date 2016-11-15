@@ -84,14 +84,21 @@ void FrameSequence_webp::constructDependencyChain() {
 #endif
 }
 
-FrameSequence_webp::FrameSequence_webp(Stream* stream) {
+FrameSequence_webp::FrameSequence_webp(Stream* stream)
+        : mDemux(NULL)
+        , mIsKeyFrame(NULL) {
     // Read RIFF header to get file size.
     uint8_t riff_header[RIFF_HEADER_SIZE];
     if (stream->read(riff_header, RIFF_HEADER_SIZE) != RIFF_HEADER_SIZE) {
         ALOGE("WebP header load failed");
         return;
     }
-    mData.size = CHUNK_HEADER_SIZE + GetLE32(riff_header + TAG_SIZE);
+    uint32_t readSize = GetLE32(riff_header + TAG_SIZE);
+    if (readSize > MAX_CHUNK_PAYLOAD) {
+        ALOGE("WebP got header size too large");
+        return;
+    }
+    mData.size = CHUNK_HEADER_SIZE + readSize;
     mData.bytes = new uint8_t[mData.size];
     memcpy((void*)mData.bytes, riff_header, RIFF_HEADER_SIZE);
 

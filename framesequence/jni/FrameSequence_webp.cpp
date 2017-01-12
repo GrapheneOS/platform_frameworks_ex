@@ -99,6 +99,10 @@ FrameSequence_webp::FrameSequence_webp(Stream* stream)
         return;
     }
     mData.size = CHUNK_HEADER_SIZE + readSize;
+    if(mData.size < RIFF_HEADER_SIZE) {
+        ALOGE("WebP file malformed");
+        return;
+    }
     mData.bytes = new uint8_t[mData.size];
     memcpy((void*)mData.bytes, riff_header, RIFF_HEADER_SIZE);
 

@@ -359,8 +359,8 @@ long FrameSequenceState_webp::drawFrame(int frameNr,
     // Return last frame's delay.
     const int frameCount = mFrameSequence.getFrameCount();
     const int lastFrame = (frameNr + frameCount - 1) % frameCount;
-    ok = WebPDemuxGetFrame(demux, lastFrame, &currIter);
-    ALOG_ASSERT(ok, "Could not retrieve frame# %d", lastFrame - 1);
+    ok = WebPDemuxGetFrame(demux, lastFrame + 1, &currIter);
+    ALOG_ASSERT(ok, "Could not retrieve frame# %d", lastFrame);
     const int lastFrameDelay = currIter.duration;
 
     WebPDemuxReleaseIterator(&currIter);

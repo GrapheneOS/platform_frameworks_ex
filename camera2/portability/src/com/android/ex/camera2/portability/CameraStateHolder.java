@@ -59,10 +59,17 @@ public abstract class CameraStateHolder {
     }
 
     /**
-     * Change the state to be invalid. Once invalidated, the state will be invalid forever.
+     * Change the state to be invalid.
      */
     public synchronized void invalidate() {
         mInvalid = true;
+    }
+
+    /**
+     * Change the state to be valid.
+     */
+    public synchronized void setValid() {
+        mInvalid = false;
     }
 
     /**

@@ -620,9 +620,6 @@ class AndroidCameraAgentImpl extends CameraAgent {
                         "] at CameraState[" + cameraState + "]";
                 Log.e(TAG, "RuntimeException during " + errorContext, ex);
 
-                // Be conservative by invalidating both CameraAgent and CameraProxy objects.
-                mCameraState.invalidate();
-
                 if (mCamera != null) {
                     Log.i(TAG, "Release camera since mCamera is not null.");
                     try {

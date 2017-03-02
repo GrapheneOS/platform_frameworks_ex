@@ -349,16 +349,13 @@ class AndroidCameraAgentImpl extends CameraAgent {
         public void handleMessage(final Message msg) {
             super.handleMessage(msg);
 
-            int cameraAction = msg.what;
-            // We allow OPEN_CAMERA action to proceed even if the camera may be in an invalid state.
-            // Otherwise, previous failed camera actions with RuntimeException would cause the
-            // camera can't be opened ever again.
-            if (getCameraState().isInvalid() && cameraAction != CameraActions.OPEN_CAMERA) {
+            if (getCameraState().isInvalid()) {
                 Log.v(TAG, "Skip handleMessage - action = '" + CameraActions.stringify(msg.what) + "'");
                 return;
             }
             Log.v(TAG, "handleMessage - action = '" + CameraActions.stringify(msg.what) + "'");
 
+            int cameraAction = msg.what;
             try {
                 switch (cameraAction) {
                     case CameraActions.OPEN_CAMERA: {
@@ -382,7 +379,6 @@ class AndroidCameraAgentImpl extends CameraAgent {
 
                             mCamera.setErrorCallback(this);
 
-                            mCameraState.setValid();
                             mCameraState.setState(AndroidCameraStateHolder.CAMERA_IDLE);
                             if (openCallback != null) {
                                 CameraProxy cameraProxy = new AndroidCameraProxyImpl(

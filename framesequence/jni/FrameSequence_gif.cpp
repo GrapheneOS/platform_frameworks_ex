@@ -316,19 +316,18 @@ long FrameSequenceState_gif::drawFrame(int frameNr,
                 cmap = frame.ImageDesc.ColorMap;
             }
 
-            if (cmap == NULL || cmap->ColorCount != (1 << cmap->BitsPerPixel)) {
-                ALOGW("Warning: potentially corrupt color map");
-            }
-
-            const unsigned char* src = (unsigned char*)frame.RasterBits;
-            Color8888* dst = outputPtr + frame.ImageDesc.Left +
-                    frame.ImageDesc.Top * outputPixelStride;
-            GifWord copyWidth, copyHeight;
-            getCopySize(frame.ImageDesc, width, height, copyWidth, copyHeight);
-            for (; copyHeight > 0; copyHeight--) {
-                copyLine(dst, src, cmap, gcb.TransparentColor, copyWidth);
-                src += frame.ImageDesc.Width;
-                dst += outputPixelStride;
+            // If a cmap is missing, the frame can't be decoded, so we skip it.
+            if (cmap) {
+                const unsigned char* src = (unsigned char*)frame.RasterBits;
+                Color8888* dst = outputPtr + frame.ImageDesc.Left +
+                        frame.ImageDesc.Top * outputPixelStride;
+                GifWord copyWidth, copyHeight;
+                getCopySize(frame.ImageDesc, width, height, copyWidth, copyHeight);
+                for (; copyHeight > 0; copyHeight--) {
+                    copyLine(dst, src, cmap, gcb.TransparentColor, copyWidth);
+                    src += frame.ImageDesc.Width;
+                    dst += outputPixelStride;
+                }
             }
         }
     }

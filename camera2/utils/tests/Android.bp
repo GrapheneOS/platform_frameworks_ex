@@ -18,7 +18,7 @@ android_test {
     srcs: ["src/**/*.java"],
     static_libs: [
         "android-ex-camera2-utils",
-        "android-support-test",
+        "androidx.test.rules",
         "mockito-target-minus-junit4",
     ],
 }

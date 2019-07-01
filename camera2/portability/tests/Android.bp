@@ -22,7 +22,7 @@ android_test {
         "android-ex-camera2-portability",
         "android-ex-camera2-utils",
         "android-ex-camera2-utils-tests",
-        "android-support-test",
+        "androidx.test.rules",
         "mockito-target-minus-junit4",
     ],
 }

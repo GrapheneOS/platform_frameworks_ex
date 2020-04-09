@@ -27,6 +27,7 @@ cc_library_shared {
     //  endif
 
     static_libs: ["libgif"],
+    header_libs: ["jni_headers"],
     include_dirs: ["external/giflib"],
     srcs: [
         "BitmapDecoderJNI.cpp",

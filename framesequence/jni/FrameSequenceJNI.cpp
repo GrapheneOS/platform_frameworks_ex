@@ -141,7 +141,7 @@ static jlong JNICALL nativeGetFrame(
     return delayMs;
 }
 
-static JNINativeMethod gMethods[] = {
+static const JNINativeMethod gMethods[] = {
     {   "nativeDecodeByteArray",
         "([BII)L" JNI_PACKAGE "/FrameSequence;",
         (void*) nativeDecodeByteArray

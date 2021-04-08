@@ -62,6 +62,11 @@ public final class BeautyPreviewExtenderImpl implements PreviewExtenderImpl {
     @Override
     public boolean isExtensionAvailable(String cameraId,
             CameraCharacteristics cameraCharacteristics) {
+        return false;
+    }
+
+    public boolean isExtensionAvailableOriginal(String cameraId,
+            CameraCharacteristics cameraCharacteristics) {
         // Implement the logic to check whether the extension function is supported or not.
 
         if (cameraCharacteristics == null) {

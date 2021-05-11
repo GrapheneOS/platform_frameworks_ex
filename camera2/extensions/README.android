@@ -1,7 +1,7 @@
 Library Name: CameraX Extension stub and sample
 License: Apache 2
 Description: The CameraX Extension stub library along with a very basic sample
-implementation.
+implementation. The stub includes extension API versions 1.2.0, 1.1.0 and older.
 
 Local patches
 -------------

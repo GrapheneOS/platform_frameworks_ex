@@ -23,12 +23,12 @@ java_library {
     srcs: ["src/**/*.java"],
 
     sdk_version: "current",
-    product_specific: true,
+    vendor: true,
 }
 
 prebuilt_etc {
     name: "sample_camera_extensions.xml",
     src: "camera_extensions.xml",
     sub_dir: "permissions",
-    product_specific: true,
+    vendor: true,
 }

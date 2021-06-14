@@ -16,11 +16,14 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
+
 /**
  * A interface to receive and process the upcoming next available Image.
  *
  * <p>Implemented by OEM.
  */
+@SuppressLint("UnknownNullness")
 public interface ImageProcessorImpl {
     /**
      * The reference count will be decremented when this method returns. If an extension wants
@@ -36,10 +39,16 @@ public interface ImageProcessorImpl {
      * @param timestampNs    the timestamp in nanoseconds associated with this image
      * @param imageReference A reference to the {@link android.media.Image} which might contain
      *                       null if OEM close(decrement) the image too slowly
+     * @param physicalCameraId used to distinguish which physical camera id the image comes from
+     *                         when the output configuration is
+     *                         MultiResolutionImageReaderOutputConfigImpl. It is also set if
+     *                         physicalCameraId is set in other Camera2OutputConfigImpl types.
      *
      */
     void onNextImageAvailable(
             int outputConfigId,
             long timestampNs,
-            ImageReferenceImpl imageReference);
+            ImageReferenceImpl imageReference,
+            String physicalCameraId
+            );
 }

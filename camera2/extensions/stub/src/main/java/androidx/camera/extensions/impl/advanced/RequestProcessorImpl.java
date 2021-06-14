@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
@@ -27,6 +28,7 @@ import java.util.Map;
 /**
  * A Interface to execute requests.
  */
+@SuppressLint("UnknownNullness")
 public interface RequestProcessorImpl {
     /**
      * Sets a {@link ImageProcessorImpl} to receive {@link ImageReferenceImpl} to process.

@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
@@ -55,6 +56,7 @@ import java.util.Map;
  * (6) {@link #deInitSession}: called when CameraCaptureSession is destroyed
  * </pre>
  */
+@SuppressLint("UnknownNullness")
 public interface SessionProcessorImpl {
     /**
      * Notify to start the session for the extension. This is where the use case is started and

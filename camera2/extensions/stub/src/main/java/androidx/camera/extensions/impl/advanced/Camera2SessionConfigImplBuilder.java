@@ -17,6 +17,7 @@
 package androidx.camera.extensions.impl.advanced;
 
 
+import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 
@@ -29,6 +30,7 @@ import java.util.Map;
  * A builder implementation to help OEM build the {@link Camera2SessionConfigImpl} instance.
  * Implementation will be provided in the stub.
  */
+@SuppressLint("UnknownNullness")
 public class Camera2SessionConfigImplBuilder {
     private int mSessionTemplateId = CameraDevice.TEMPLATE_PREVIEW;
     Map<CaptureRequest.Key<?>, Object> mSessionParameters = new HashMap<>();

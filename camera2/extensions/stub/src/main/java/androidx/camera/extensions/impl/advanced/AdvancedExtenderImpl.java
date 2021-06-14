@@ -16,9 +16,12 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraCharacteristics;
 import android.util.Range;
 import android.util.Size;
+
+import androidx.camera.extensions.impl.ExtensionVersionImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -33,20 +36,19 @@ import java.util.Map;
  * Able to triggers single or repeating request with the capabilities to specify target surfaces,
  * template id and parameters.
  *
- * <p>OEM should be able to implement the basic extender interface functionality using this
- * advanced extender interface.
- *
  * <p>OEM needs to implement it with class name HdrAdvancedExtenderImpl for HDR,
  * NightAdvancedExtenderImpl for night mode, BeautyAdvancedExtenderImpl for beauty mode,
  * BokehAdvancedExtenderImpl for bokeh mode and AutoAdvancedExtenderImpl for auto mode.
  *
- * <p>If both advanced and basic extender implementations are found and apps are built with
- * interface 1.2 and above, advanced extender will be used. OEM is okay to implement advanced
+ * <p>OEMs are required to return true in
+ * {@link ExtensionVersionImpl#isAdvancedExtenderImplemented()} in order to request CameraX to
+ * use advanced extender over basic extender. OEM is okay to implement advanced
  * extender only Or basic extender only. However the caveat of advanced-only implementation is,
  * extensions will be unavailable on the apps using interfaces prior to 1.2.
  *
  * @since 1.2
  */
+@SuppressLint("UnknownNullness")
 public interface AdvancedExtenderImpl {
 
     /**
@@ -104,8 +106,8 @@ public interface AdvancedExtenderImpl {
      * <p>The preview surface format in the CameraCaptureSession may not be identical to the
      * supported preview output format returned here. Like in the basic extender interface, the
      * preview PRIVATE surface could be added to the CameraCaptureSession and OEM processes it in
-     * the HAL. Or OEM can configure a intermediate YUV surface of the same size and writes the
-     * output to the preview output surface.
+     * the HAL. Alternatively OEM can configure a intermediate YUV surface of the same size and
+     * writes the output to the preview output surface.
      */
     Map<Integer, List<Size>> getSupportedPreviewOutputResolutions(String cameraId);
 
@@ -114,8 +116,8 @@ public interface AdvancedExtenderImpl {
      * both JPEG and YUV_420_888 format output.
      *
      * <p>Like in the basic extender interface, the surface created with this supported
-     * format/size could be either added in CameraCaptureSession with HAL processing OR we
-     * configure intermediate surfaces(YUV/RAW..) and writes the output to the output surface.
+     * format/size could be either added in CameraCaptureSession with HAL processing OR it
+     * configures intermediate surfaces(YUV/RAW..) and writes the output to the output surface.
      */
     Map<Integer, List<Size>> getSupportedCaptureOutputResolutions(String cameraId);
 

@@ -16,25 +16,16 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
+
 import java.util.List;
 
 /**
  * A config representing a {@link android.hardware.camera2.params.OutputConfiguration} where
  * Surface will be created by the information in this config.
  */
+@SuppressLint("UnknownNullness")
 public interface Camera2OutputConfigImpl {
-    enum UsageType {
-        USAGE_NOTSPECIFIED,
-        USAGE_PREVIEW,
-        USAGE_CAPTURE,
-        USAGE_ANALYSIS
-    }
-
-    /**
-     * Gets the usage type which could be USAGE_PREVIEW, USAGE_CAPTURE or USAGE_ANALYSIS.
-     */
-    UsageType getUsageType();
-
     /**
      * Gets thd id of this output config. The id can be used to identify the stream in vendor
      * implementations.

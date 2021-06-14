@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraCharacteristics;
 import android.util.Range;
 import android.util.Size;
@@ -30,6 +31,7 @@ import java.util.Map;
  *
  * @since 1.2
  */
+@SuppressLint("UnknownNullness")
 public class BokehAdvancedExtenderImpl implements AdvancedExtenderImpl {
     public BokehAdvancedExtenderImpl() {
     }

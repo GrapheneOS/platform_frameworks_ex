@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.media.Image;
 
 /**
@@ -25,6 +26,7 @@ import android.media.Image;
  *
  * <p>Implemented by Camera2/CameraX.
  */
+@SuppressLint("UnknownNullness")
 public interface ImageReferenceImpl {
 
     /**

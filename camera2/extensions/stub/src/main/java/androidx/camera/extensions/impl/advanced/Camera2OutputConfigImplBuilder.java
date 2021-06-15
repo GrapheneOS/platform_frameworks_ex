@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.util.Size;
 import android.view.Surface;
 
@@ -27,10 +28,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A builder implementation to help OEM build the {@link Camera2OutputConfigImpl} instance.
  * Implementation will be provided in the stub.
  */
+@SuppressLint("UnknownNullness")
 public class Camera2OutputConfigImplBuilder {
     static AtomicInteger sLastId = new AtomicInteger(0);
     private OutputConfigImplImpl mOutputConfig;
-    private Camera2OutputConfigImpl.UsageType mUsageType;
     private int mSurfaceGroupId;
     private String mPhysicalCameraId;
     private List<Camera2OutputConfigImpl> mSurfaceSharingConfigs;
@@ -100,15 +101,6 @@ public class Camera2OutputConfigImplBuilder {
     }
 
     /**
-     * Sets the usage type.
-     */
-    public Camera2OutputConfigImplBuilder setUsageType(
-            Camera2OutputConfigImpl.UsageType usageType) {
-        mUsageType = usageType;
-        return this;
-    }
-
-    /**
      * Build a {@link Camera2OutputConfigImpl} instance.
      */
     public Camera2OutputConfigImpl build() {
@@ -116,13 +108,11 @@ public class Camera2OutputConfigImplBuilder {
         mOutputConfig.setPhysicalCameraId(mPhysicalCameraId);
         mOutputConfig.setSurfaceGroup(mSurfaceGroupId);
         mOutputConfig.setSurfaceSharingConfigs(mSurfaceSharingConfigs);
-        mOutputConfig.setUsageType(mUsageType);
         return mOutputConfig;
     }
 
     private static class OutputConfigImplImpl implements Camera2OutputConfigImpl {
         private int mId;
-        private UsageType mUsageType;
         private int mSurfaceGroup;
         private String mPhysicalCameraId;
         private List<Camera2OutputConfigImpl> mSurfaceSharingConfigs;
@@ -131,13 +121,7 @@ public class Camera2OutputConfigImplBuilder {
             mId = -1;
             mSurfaceGroup = 0;
             mPhysicalCameraId = null;
-            mUsageType = UsageType.USAGE_NOTSPECIFIED;
             mSurfaceSharingConfigs = null;
-        }
-
-        @Override
-        public UsageType getUsageType() {
-            return mUsageType;
         }
 
         @Override
@@ -162,10 +146,6 @@ public class Camera2OutputConfigImplBuilder {
 
         public void setId(int id) {
             mId = id;
-        }
-
-        public void setUsageType(UsageType usageType) {
-            mUsageType = usageType;
         }
 
         public void setSurfaceGroup(int surfaceGroup) {

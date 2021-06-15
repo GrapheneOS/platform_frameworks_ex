@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.hardware.camera2.CaptureRequest;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Map;
 /**
  * A config representing a {@link android.hardware.camera2.params.SessionConfiguration}
  */
+@SuppressLint("UnknownNullness")
 public interface Camera2SessionConfigImpl {
     /**
      * Returns all the {@link Camera2OutputConfigImpl}s that will be used to create

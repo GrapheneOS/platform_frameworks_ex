@@ -16,11 +16,13 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
 import android.util.Size;
 
 /**
  * Surface will be created by constructing a ImageReader.
  */
+@SuppressLint("UnknownNullness")
 public interface ImageReaderOutputConfigImpl extends Camera2OutputConfigImpl {
     /**
      * Returns the size of the surface.

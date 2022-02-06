@@ -18,6 +18,7 @@ package androidx.camera.extensions.impl;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.ImageWriter;
 import android.media.Image;
@@ -25,6 +26,8 @@ import android.util.Pair;
 import android.util.Size;
 import android.view.Surface;
 
+import java.util.ArrayList;
+import java.util.concurrent.Executor;
 import java.util.List;
 
 /**
@@ -38,6 +41,8 @@ import java.util.List;
  */
 public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
     private static final int DEFAULT_STAGE_ID = 0;
+    private static final CaptureResult.Key<Float> SUPPORTED_CAPTURE_RESULT_KEY =
+        CaptureResult.CONTROL_ZOOM_RATIO;
 
     ImageWriter mWriter;
 
@@ -123,6 +128,41 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
         @Override
         public void process(Image image, TotalCaptureResult result) {
             mWriter.queueInputImage(image);
+        }
+
+        @Override
+        public void process(Image image, TotalCaptureResult result,
+                ProcessResultImpl resultCallback, Executor executor) {
+            if ((resultCallback != null) && (result != null)) {
+                ArrayList<Pair<CaptureResult.Key, Object>> captureResults = new ArrayList<>();
+                Long shutterTimestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
+                if (shutterTimestamp != null) {
+                    Float zoomRatio = result.get(SUPPORTED_CAPTURE_RESULT_KEY);
+                    if (zoomRatio != null) {
+                        captureResults.add(new Pair<>(SUPPORTED_CAPTURE_RESULT_KEY, zoomRatio));
+                    }
+
+                    Byte jpegQuality = result.get(CaptureResult.JPEG_QUALITY);
+                    if (jpegQuality != null) {
+                        captureResults.add(new Pair<>(CaptureResult.JPEG_QUALITY, jpegQuality));
+                    }
+
+                    Integer jpegOrientation = result.get(CaptureResult.JPEG_ORIENTATION);
+                    if (jpegOrientation != null) {
+                        captureResults.add(new Pair<>(CaptureResult.JPEG_ORIENTATION,
+                                jpegOrientation));
+                    }
+
+                    if (executor != null) {
+                        executor.execute(() -> resultCallback.onCaptureCompleted(shutterTimestamp,
+                                captureResults));
+                    } else {
+                        resultCallback.onCaptureCompleted(shutterTimestamp, captureResults);
+                    }
+                }
+            }
+
+            process(image, result);
         }
 
         @Override

@@ -18,6 +18,8 @@ package androidx.camera.extensions.impl;
 
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
@@ -87,7 +89,7 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      * resolution.
      *
      * <p>This includes the time spent processing the multi-frame capture request along with any
-     * additional time for encoding of the processed buffer in the framework if necessary.
+     * additional time for encoding of the processed buffer in the framework if necessary.</p>
      *
      * @param captureOutputSize size of the capture output surface. If it is null or not in the
      *                          supported output sizes, maximum capture output size is used for
@@ -98,4 +100,39 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      */
     @Nullable
     Range<Long> getEstimatedCaptureLatencyRange(@Nullable Size captureOutputSize);
+
+    /**
+     * Return a list of orthogonal capture request keys.
+     *
+     * <p>Any keys included in the list will be configurable by clients of the extension and will
+     * affect the extension functionality.</p>
+     *
+     * <p>Do note that the list of keys applies to {@link PreviewExtenderImpl} as well.</p>
+     *
+     * @return List of supported orthogonal capture keys, or
+     * null if no capture settings are not supported.
+     * @since 1.3
+     */
+    @Nullable
+    List<CaptureRequest.Key> getAvailableCaptureRequestKeys();
+
+    /**
+     * Return a list of supported capture result keys.
+     *
+     * <p>Any keys included in this list must be available as part of the registered
+     * {@link ProcessResultImpl} callback. In case frame processing is not supported,
+     * then the Camera2/CameraX framework will use the list to filter and notify camera clients
+     * using the respective camera results.</p>
+     *
+     * <p>At the very minimum, it is expected that the result key list is a superset of the
+     * capture request keys.</p>
+     *
+     * <p>Do note that the list of keys applies to {@link PreviewExtenderImpl} as well.</p>
+     *
+     * @return List of supported capture result keys, or
+     * null if capture results are not supported.
+     * @since 1.3
+     */
+    @Nullable
+    List<CaptureResult.Key> getAvailableCaptureResultKeys();
 }

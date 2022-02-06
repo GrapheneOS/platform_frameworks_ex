@@ -18,17 +18,21 @@ package androidx.camera.extensions.impl;
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.media.ImageWriter;
 import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Range;
 import android.util.Size;
 import android.view.Surface;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.Executor;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +52,10 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     private static final int NORMAL_STAGE_ID = 1;
     private static final int OVER_STAGE_ID = 2;
     private static final int SESSION_STAGE_ID = 101;
+    private static final CaptureRequest.Key<Float> SUPPORTED_CAPTURE_REQUEST_KEY =
+        CaptureRequest.CONTROL_ZOOM_RATIO;
+    private static final CaptureResult.Key<Float> SUPPORTED_CAPTURE_RESULT_KEY =
+        CaptureResult.CONTROL_ZOOM_RATIO;
 
     /**
      * @hide
@@ -68,8 +76,17 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     @Override
     public boolean isExtensionAvailable(String cameraId,
             CameraCharacteristics cameraCharacteristics) {
+        boolean zoomRatioSupported = false;
+        if (cameraCharacteristics != null) {
+            Range<Float> zoomRatioRange = cameraCharacteristics.get(
+                    CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);
+
+            zoomRatioSupported = (zoomRatioRange != null) && (zoomRatioRange.getUpper() > 1.f);
+        }
+
         // Requires API 23 for ImageWriter
-        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M;
+        return (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) &&
+                zoomRatioSupported;
     }
 
     /**
@@ -119,6 +136,49 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
                     }
 
                     @Override
+                    public void process(Map<Integer, Pair<Image, TotalCaptureResult>> results,
+                            ProcessResultImpl resultCallback, Executor executor) {
+                        Pair<Image, TotalCaptureResult> result = results.get(NORMAL_STAGE_ID);
+
+                        if ((resultCallback != null) && (result != null)) {
+                            ArrayList<Pair<CaptureResult.Key, Object>> captureResults =
+                                    new ArrayList<>();
+                            Long shutterTimestamp =
+                                    result.second.get(CaptureResult.SENSOR_TIMESTAMP);
+                            if (shutterTimestamp != null) {
+                                Float zoomRatio = result.second.get(SUPPORTED_CAPTURE_RESULT_KEY);
+                                if (zoomRatio != null) {
+                                    captureResults.add(new Pair<>(SUPPORTED_CAPTURE_RESULT_KEY,
+                                            zoomRatio));
+                                }
+
+                                Byte jpegQuality = result.second.get(CaptureResult.JPEG_QUALITY);
+                                if (jpegQuality != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.JPEG_QUALITY,
+                                            jpegQuality));
+                                }
+
+                                Integer jpegOrientation = result.second.get(
+                                        CaptureResult.JPEG_ORIENTATION);
+                                if (jpegOrientation != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.JPEG_ORIENTATION,
+                                            jpegOrientation));
+                                }
+
+                                if (executor != null) {
+                                    executor.execute(() -> resultCallback.onCaptureCompleted(
+                                            shutterTimestamp, captureResults));
+                                } else {
+                                    resultCallback.onCaptureCompleted(shutterTimestamp,
+                                            captureResults);
+                                }
+                            }
+                        }
+
+                        process(results);
+                    }
+
+                    @Override
                     public void process(Map<Integer, Pair<Image, TotalCaptureResult>> results) {
                         Log.d(TAG, "Started HDR CaptureProcessor");
 
@@ -159,10 +219,15 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
                             ByteBuffer vByteBuffer = image.getPlanes()[1].getBuffer();
 
                             // Sample here just simply return the normal image result
-                            yByteBuffer.put(imageDataPairs.get(1).first.getPlanes()[0].getBuffer());
-                            uByteBuffer.put(imageDataPairs.get(1).first.getPlanes()[2].getBuffer());
-                            vByteBuffer.put(imageDataPairs.get(1).first.getPlanes()[1].getBuffer());
+                            yByteBuffer.put(imageDataPairs.get(
+                                    NORMAL_STAGE_ID).first.getPlanes()[0].getBuffer());
+                            uByteBuffer.put(imageDataPairs.get(
+                                    NORMAL_STAGE_ID).first.getPlanes()[2].getBuffer());
+                            vByteBuffer.put(imageDataPairs.get(
+                                    NORMAL_STAGE_ID).first.getPlanes()[1].getBuffer());
 
+                            image.setTimestamp(imageDataPairs.get(
+                                    NORMAL_STAGE_ID).first.getTimestamp());
                             mImageWriter.queueInputImage(image);
                         }
 
@@ -247,4 +312,13 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
         return null;
     }
 
+    @Override
+    public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
+        return Arrays.asList(SUPPORTED_CAPTURE_REQUEST_KEY);
+    }
+
+    @Override
+    public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
+        return Arrays.asList(SUPPORTED_CAPTURE_RESULT_KEY);
+    }
 }

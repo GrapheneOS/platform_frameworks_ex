@@ -18,6 +18,7 @@ package androidx.camera.extensions.impl;
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.media.ImageWriter;
@@ -29,6 +30,7 @@ import android.view.Surface;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
 import java.util.List;
 import java.util.Map;
 
@@ -105,6 +107,13 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             mImageWriter = ImageWriter.newInstance(surface, 1);
                         }
+                    }
+
+                    @Override
+                    public void process(Map<Integer, Pair<Image, TotalCaptureResult>> results,
+                            ProcessResultImpl resultCallback, Executor executor) {
+                        throw new RuntimeException("The extension doesn't support capture " +
+                                "results!");
                     }
 
                     @Override
@@ -229,4 +238,13 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
         return null;
     }
 
+    @Override
+    public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
+        return null;
+    }
+
+    @Override
+    public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
+        return null;
+    }
 }

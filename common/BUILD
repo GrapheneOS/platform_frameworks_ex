@@ -15,4 +15,5 @@ android_library(
     custom_package = "com.android.common",
     manifest = "AndroidManifest.xml",
     visibility = ["//visibility:public"],
+    deps = ["//prebuilts/sdk:public_current_android_sdk_java_import"],
 )

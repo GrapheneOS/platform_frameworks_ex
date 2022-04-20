@@ -20,6 +20,7 @@ import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.MeteringRectangle;
 import android.media.ImageWriter;
 import android.media.Image;
 import android.util.Pair;
@@ -41,8 +42,6 @@ import java.util.List;
  */
 public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
     private static final int DEFAULT_STAGE_ID = 0;
-    private static final CaptureResult.Key<Float> SUPPORTED_CAPTURE_RESULT_KEY =
-        CaptureResult.CONTROL_ZOOM_RATIO;
 
     ImageWriter mWriter;
 
@@ -64,8 +63,14 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
     @Override
     public boolean isExtensionAvailable(String cameraId,
             CameraCharacteristics cameraCharacteristics) {
-        // Implement the logic to check whether the extension function is supported or not.
-        return true;
+        boolean zoomRatioSupported =
+            CameraCharacteristicAvailability.supportsZoomRatio(cameraCharacteristics);
+        boolean hasFocuser =
+            CameraCharacteristicAvailability.hasFocuser(cameraCharacteristics);
+
+        // Requires API 23 for ImageWriter
+        return (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) &&
+                zoomRatioSupported && hasFocuser;
     }
 
     /**
@@ -137,10 +142,27 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
                 ArrayList<Pair<CaptureResult.Key, Object>> captureResults = new ArrayList<>();
                 Long shutterTimestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
                 if (shutterTimestamp != null) {
-                    Float zoomRatio = result.get(SUPPORTED_CAPTURE_RESULT_KEY);
+                    Float zoomRatio = result.get(CaptureResult.CONTROL_ZOOM_RATIO);
                     if (zoomRatio != null) {
-                        captureResults.add(new Pair<>(SUPPORTED_CAPTURE_RESULT_KEY, zoomRatio));
+                        captureResults.add(new Pair<>(CaptureResult.CONTROL_ZOOM_RATIO, zoomRatio));
                     }
+                    Integer afMode = result.get(CaptureResult.CONTROL_AF_MODE);
+                    if (afMode != null) {
+                        captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_MODE, afMode));
+                    }
+                    Integer afTrigger = result.get(CaptureResult.CONTROL_AF_TRIGGER);
+                    if (afTrigger != null) {
+                        captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_TRIGGER, afTrigger));
+                    }
+                    Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                    if (afState != null) {
+                        captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_STATE, afState));
+                    }
+                    MeteringRectangle[] afRegions = result.get(CaptureResult.CONTROL_AF_REGIONS);
+                    if (afRegions != null) {
+                        captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_REGIONS, afRegions));
+                    }
+
 
                     Byte jpegQuality = result.get(CaptureResult.JPEG_QUALITY);
                     if (jpegQuality != null) {

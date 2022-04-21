@@ -18,9 +18,12 @@ package androidx.camera.extensions.impl.advanced;
 
 import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.util.Range;
 import android.util.Size;
 
+import androidx.annotation.NonNull;
 import androidx.camera.extensions.impl.ExtensionVersionImpl;
 
 import java.util.List;
@@ -135,4 +138,36 @@ public interface AdvancedExtenderImpl {
      * required for starting a extension and cleanup.
      */
     SessionProcessorImpl createSessionProcessor();
+
+    /**
+     * Return a list of orthogonal capture request keys.
+     *
+     * <p>Any keys included in the list will be configurable by clients of the extension and will
+     * affect the extension functionality.</p>
+     *
+     * <p>If supported, then controls 'android.jpeg.quality' and 'android.jpeg.orientation' must
+     * always be present in the supported list.</p>
+     *
+     * @return List of supported orthogonal capture keys, or
+     * an empty list if no capture settings are not supported.
+     * @since 1.3
+     */
+    @NonNull
+    List<CaptureRequest.Key> getAvailableCaptureRequestKeys();
+
+    /**
+     * Return a list of supported capture result keys.
+     *
+     * <p>Any keys included in this list must be available as part of the registered
+     * {@link SessionProcessorImpl.CaptureCallback#onCaptureCompleted} callback.</p>
+     *
+     * <p>At the very minimum, it is expected that the result key list is a superset of the
+     * capture request keys.</p>
+     *
+     * @return List of supported capture result keys, or
+     * an empty list if capture results are not supported.
+     * @since 1.3
+     */
+    @NonNull
+    List<CaptureResult.Key> getAvailableCaptureResultKeys();
 }

@@ -30,6 +30,7 @@ import android.view.Surface;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.Executor;
 import java.util.List;
 import java.util.Map;
@@ -77,7 +78,8 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
             return false;
         }
 
-        return CameraCharacteristicAvailability.isWBModeAvailable(cameraCharacteristics, MODE);
+        return CameraCharacteristicAvailability.isWBModeAvailable(cameraCharacteristics, MODE) &&
+            CameraCharacteristicAvailability.hasFlashUnit(cameraCharacteristics);
     }
 
     /**
@@ -112,8 +114,80 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
                     @Override
                     public void process(Map<Integer, Pair<Image, TotalCaptureResult>> results,
                             ProcessResultImpl resultCallback, Executor executor) {
-                        throw new RuntimeException("The extension doesn't support capture " +
-                                "results!");
+                        Pair<Image, TotalCaptureResult> result = results.get(DEFAULT_STAGE_ID);
+
+                        if ((resultCallback != null) && (result != null)) {
+                            ArrayList<Pair<CaptureResult.Key, Object>> captureResults =
+                                    new ArrayList<>();
+                            Long shutterTimestamp =
+                                    result.second.get(CaptureResult.SENSOR_TIMESTAMP);
+                            if (shutterTimestamp != null) {
+                                Integer aeMode = result.second.get(
+                                        CaptureResult.CONTROL_AE_MODE);
+                                if (aeMode != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_AE_MODE,
+                                            aeMode));
+                                }
+
+                                Integer aeTrigger = result.second.get(
+                                        CaptureResult.CONTROL_AE_PRECAPTURE_TRIGGER);
+                                if (aeTrigger != null) {
+                                    captureResults.add(new Pair<>(
+                                                CaptureResult.CONTROL_AE_PRECAPTURE_TRIGGER,
+                                                aeTrigger));
+                                }
+
+                                Boolean aeLock = result.second.get(CaptureResult.CONTROL_AE_LOCK);
+                                if (aeLock != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_AE_LOCK,
+                                            aeLock));
+                                }
+
+                                Integer aeState = result.second.get(
+                                        CaptureResult.CONTROL_AE_STATE);
+                                if (aeState != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_AE_STATE,
+                                            aeState));
+                                }
+
+                                Integer flashMode = result.second.get(
+                                        CaptureResult.FLASH_MODE);
+                                if (flashMode != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.FLASH_MODE,
+                                            flashMode));
+                                }
+
+                                Integer flashState = result.second.get(
+                                        CaptureResult.FLASH_STATE);
+                                if (flashState != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.FLASH_STATE,
+                                            flashState));
+                                }
+
+                                Byte jpegQuality = result.second.get(CaptureResult.JPEG_QUALITY);
+                                if (jpegQuality != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.JPEG_QUALITY,
+                                            jpegQuality));
+                                }
+
+                                Integer jpegOrientation = result.second.get(
+                                        CaptureResult.JPEG_ORIENTATION);
+                                if (jpegOrientation != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.JPEG_ORIENTATION,
+                                            jpegOrientation));
+                                }
+
+                                if (executor != null) {
+                                    executor.execute(() -> resultCallback.onCaptureCompleted(
+                                            shutterTimestamp, captureResults));
+                                } else {
+                                    resultCallback.onCaptureCompleted(shutterTimestamp,
+                                            captureResults);
+                                }
+                            }
+                        }
+
+                        process(results);
                     }
 
                     @Override
@@ -140,6 +214,13 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
                                 yByteBuffer.put(result.first.getPlanes()[0].getBuffer());
                                 uByteBuffer.put(result.first.getPlanes()[2].getBuffer());
                                 vByteBuffer.put(result.first.getPlanes()[1].getBuffer());
+                                Long sensorTimestamp =
+                                    result.second.get(CaptureResult.SENSOR_TIMESTAMP);
+                                if (sensorTimestamp != null) {
+                                    image.setTimestamp(sensorTimestamp);
+                                } else {
+                                    Log.e(TAG, "Sensor timestamp absent using default!");
+                                }
 
                                 mImageWriter.queueInputImage(image);
                             }
@@ -240,11 +321,18 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
 
     @Override
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
-        return null;
+        final CaptureRequest.Key [] CAPTURE_REQUEST_SET = {CaptureRequest.CONTROL_AE_MODE,
+            CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_LOCK,
+            CaptureRequest.FLASH_MODE};
+        return Arrays.asList(CAPTURE_REQUEST_SET);
     }
 
     @Override
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
-        return null;
+        final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.CONTROL_AE_MODE,
+            CaptureResult.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureResult.CONTROL_AE_LOCK,
+            CaptureResult.CONTROL_AE_STATE, CaptureResult.FLASH_MODE,
+            CaptureResult.FLASH_STATE};
+        return Arrays.asList(CAPTURE_RESULT_SET);
     }
 }

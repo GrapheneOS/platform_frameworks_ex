@@ -20,12 +20,12 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.MeteringRectangle;
 import android.media.Image;
 import android.media.ImageWriter;
 import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
-import android.util.Range;
 import android.util.Size;
 import android.view.Surface;
 
@@ -52,10 +52,6 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     private static final int NORMAL_STAGE_ID = 1;
     private static final int OVER_STAGE_ID = 2;
     private static final int SESSION_STAGE_ID = 101;
-    private static final CaptureRequest.Key<Float> SUPPORTED_CAPTURE_REQUEST_KEY =
-        CaptureRequest.CONTROL_ZOOM_RATIO;
-    private static final CaptureResult.Key<Float> SUPPORTED_CAPTURE_RESULT_KEY =
-        CaptureResult.CONTROL_ZOOM_RATIO;
 
     /**
      * @hide
@@ -76,17 +72,14 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     @Override
     public boolean isExtensionAvailable(String cameraId,
             CameraCharacteristics cameraCharacteristics) {
-        boolean zoomRatioSupported = false;
-        if (cameraCharacteristics != null) {
-            Range<Float> zoomRatioRange = cameraCharacteristics.get(
-                    CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);
-
-            zoomRatioSupported = (zoomRatioRange != null) && (zoomRatioRange.getUpper() > 1.f);
-        }
+        boolean zoomRatioSupported =
+            CameraCharacteristicAvailability.supportsZoomRatio(cameraCharacteristics);
+        boolean hasFocuser =
+            CameraCharacteristicAvailability.hasFocuser(cameraCharacteristics);
 
         // Requires API 23 for ImageWriter
         return (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) &&
-                zoomRatioSupported;
+                zoomRatioSupported && hasFocuser;
     }
 
     /**
@@ -143,13 +136,38 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
                         if ((resultCallback != null) && (result != null)) {
                             ArrayList<Pair<CaptureResult.Key, Object>> captureResults =
                                     new ArrayList<>();
-                            Long shutterTimestamp =
-                                    result.second.get(CaptureResult.SENSOR_TIMESTAMP);
+                            Long shutterTimestamp = results.get(UNDER_STAGE_ID).second.get(
+                                    CaptureResult.SENSOR_TIMESTAMP);
                             if (shutterTimestamp != null) {
-                                Float zoomRatio = result.second.get(SUPPORTED_CAPTURE_RESULT_KEY);
+                                Float zoomRatio = result.second.get(
+                                        CaptureResult.CONTROL_ZOOM_RATIO);
                                 if (zoomRatio != null) {
-                                    captureResults.add(new Pair<>(SUPPORTED_CAPTURE_RESULT_KEY,
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_ZOOM_RATIO,
                                             zoomRatio));
+                                }
+                                Integer afMode = result.second.get(
+                                        CaptureResult.CONTROL_AF_MODE);
+                                if (afMode != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_MODE,
+                                            afMode));
+                                }
+                                Integer afTrigger = result.second.get(
+                                        CaptureResult.CONTROL_AF_TRIGGER);
+                                if (afTrigger != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_TRIGGER,
+                                            afTrigger));
+                                }
+                                Integer afState = result.second.get(
+                                        CaptureResult.CONTROL_AF_STATE);
+                                if (afState != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_STATE,
+                                            afState));
+                                }
+                                MeteringRectangle[] afRegions = result.second.get(
+                                        CaptureResult.CONTROL_AF_REGIONS);
+                                if (afRegions != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.CONTROL_AF_REGIONS,
+                                            afRegions));
                                 }
 
                                 Byte jpegQuality = result.second.get(CaptureResult.JPEG_QUALITY);
@@ -227,7 +245,7 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
                                     NORMAL_STAGE_ID).first.getPlanes()[1].getBuffer());
 
                             image.setTimestamp(imageDataPairs.get(
-                                    NORMAL_STAGE_ID).first.getTimestamp());
+                                    UNDER_STAGE_ID).first.getTimestamp());
                             mImageWriter.queueInputImage(image);
                         }
 
@@ -314,11 +332,17 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
 
     @Override
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
-        return Arrays.asList(SUPPORTED_CAPTURE_REQUEST_KEY);
+        final CaptureRequest.Key [] CAPTURE_REQUEST_SET = {CaptureRequest.CONTROL_ZOOM_RATIO,
+            CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_REGIONS,
+            CaptureRequest.CONTROL_AF_TRIGGER};
+        return Arrays.asList(CAPTURE_REQUEST_SET);
     }
 
     @Override
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
-        return Arrays.asList(SUPPORTED_CAPTURE_RESULT_KEY);
+        final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.CONTROL_ZOOM_RATIO,
+            CaptureResult.CONTROL_AF_MODE, CaptureResult.CONTROL_AF_REGIONS,
+            CaptureResult.CONTROL_AF_TRIGGER, CaptureResult.CONTROL_AF_STATE};
+        return Arrays.asList(CAPTURE_RESULT_SET);
     }
 }

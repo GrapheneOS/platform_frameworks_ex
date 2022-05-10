@@ -112,4 +112,5 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
         throw new RuntimeException("Stub, replace with implementation.");
     }
+
 }

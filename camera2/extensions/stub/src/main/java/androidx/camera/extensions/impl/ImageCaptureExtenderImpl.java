@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl;
 
+import android.annotation.SuppressLint;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
@@ -24,8 +25,6 @@ import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
 
-import androidx.annotation.Nullable;
-
 import java.util.List;
 
 /**
@@ -33,6 +32,7 @@ import java.util.List;
  *
  * @since 1.0
  */
+@SuppressLint("UnknownNullness")
 public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
     /**
      * Indicates whether the extension is supported on the device.
@@ -78,10 +78,10 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      * returned list is not null, it will be used to find the best resolutions combination for
      * the bound use cases.
      *
-     * @return the customized supported resolutions.
+     * @return the customized supported resolutions, or null to support all sizes retrieved from
+     *         {@link android.hardware.camera2.params.StreamConfigurationMap}.
      * @since 1.1
      */
-    @Nullable
     List<Pair<Integer, Size[]>> getSupportedResolutions();
 
     /**
@@ -98,8 +98,7 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      * null if no capture latency info can be provided.
      * @since 1.2
      */
-    @Nullable
-    Range<Long> getEstimatedCaptureLatencyRange(@Nullable Size captureOutputSize);
+    Range<Long> getEstimatedCaptureLatencyRange(Size captureOutputSize);
 
     /**
      * Return a list of orthogonal capture request keys.
@@ -109,11 +108,37 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      *
      * <p>Do note that the list of keys applies to {@link PreviewExtenderImpl} as well.</p>
      *
-     * @return List of supported orthogonal capture keys, or
-     * null if no capture settings are not supported.
+     * <p>Also note that the keys {@link CaptureRequest#JPEG_QUALITY} and
+     * {@link CaptureRequest#JPEG_ORIENTATION} are always supported regardless being added in the
+     * list or not. To support common camera operations like zoom, tap-to-focus, flash and
+     * exposure compensation, we recommend supporting the following keys if possible.
+     * <pre>
+     *  zoom:  {@link CaptureRequest#CONTROL_ZOOM_RATIO}
+     *         {@link CaptureRequest#SCALER_CROP_REGION}
+     *  tap-to-focus:
+     *         {@link CaptureRequest#CONTROL_AF_MODE}
+     *         {@link CaptureRequest#CONTROL_AF_TRIGGER}
+     *         {@link CaptureRequest#CONTROL_AF_REGIONS}
+     *         {@link CaptureRequest#CONTROL_AE_REGIONS}
+     *         {@link CaptureRequest#CONTROL_AWB_REGIONS}
+     *  flash:
+     *         {@link CaptureRequest#CONTROL_AE_MODE}
+     *         {@link CaptureRequest#CONTROL_AE_PRECAPTURE_TRIGGER}
+     *         {@link CaptureRequest#FLASH_MODE}
+     *  exposure compensation:
+     *         {@link CaptureRequest#CONTROL_AE_EXPOSURE_COMPENSATION}
+     * </pre>
+     * On basic extensions that implement 1.2 or prior version, the above keys are all supported
+     * explicitly. When migrating from 1.2 or prior to 1.3, please note that both CameraX and
+     * Camera2 will honor the returned list and support only the keys contained in it. For
+     * example, if OEM decides to return only {@link CaptureRequest#CONTROL_ZOOM_RATIO} and
+     * {@link CaptureRequest#SCALER_CROP_REGION} in the 1.3 implementation, it means only zoom is
+     * supported for the app while tap-to-focus , flash and exposure compensation are not allowed.
+     *
+     * @return List of supported orthogonal capture keys, or an empty list if no capture settings
+     * are not supported.
      * @since 1.3
      */
-    @Nullable
     List<CaptureRequest.Key> getAvailableCaptureRequestKeys();
 
     /**
@@ -129,10 +154,9 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      *
      * <p>Do note that the list of keys applies to {@link PreviewExtenderImpl} as well.</p>
      *
-     * @return List of supported capture result keys, or
-     * null if capture results are not supported.
+     * @return List of supported capture result keys, or an empty list if capture results are not
+     * supported.
      * @since 1.3
      */
-    @Nullable
     List<CaptureResult.Key> getAvailableCaptureResultKeys();
 }

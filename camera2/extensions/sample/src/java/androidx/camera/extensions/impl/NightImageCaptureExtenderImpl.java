@@ -244,11 +244,11 @@ public final class NightImageCaptureExtenderImpl implements ImageCaptureExtender
 
     @Override
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
-        return null;
+        return new ArrayList<>();
     }
 }

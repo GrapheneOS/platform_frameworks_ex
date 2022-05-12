@@ -16,23 +16,22 @@
 
 package androidx.camera.extensions.impl;
 
+import android.annotation.SuppressLint;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.Image;
 import android.util.Pair;
 import android.view.Surface;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.util.concurrent.Executor;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 /**
  * The interface for processing a set of {@link Image}s that have captured.
  *
  * @since 1.0
  */
+@SuppressLint("UnknownNullness")
 public interface CaptureProcessorImpl extends ProcessorImpl {
     /**
      * Process a set images captured that were requested.
@@ -57,11 +56,11 @@ public interface CaptureProcessorImpl extends ProcessorImpl {
      *                       become invalid after this method completes, so no references to them
      *                       should be kept.
      * @param resultCallback Capture result callback to be called once the capture result
-     *                       values are ready.
+     *                       values of the processed image are ready.
      * @param executor       The executor to run the callback on. If null then the callback will
      *                       run on any arbitrary executor.
      * @since 1.3
      */
     void process(Map<Integer, Pair<Image, TotalCaptureResult>> results,
-            @NonNull ProcessResultImpl resultCallback, @Nullable Executor executor);
+            ProcessResultImpl resultCallback, Executor executor);
 }

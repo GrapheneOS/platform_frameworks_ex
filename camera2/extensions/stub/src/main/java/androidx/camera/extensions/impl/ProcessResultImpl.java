@@ -16,6 +16,7 @@
 
 package androidx.camera.extensions.impl;
 
+import android.annotation.SuppressLint;
 import android.hardware.camera2.CaptureResult;
 import android.util.Pair;
 
@@ -26,6 +27,7 @@ import java.util.List;
  *
  * @since 1.3
  */
+@SuppressLint("UnknownNullness")
 public interface ProcessResultImpl {
     /**
      * Capture result callback that needs to be called when the process capture results are

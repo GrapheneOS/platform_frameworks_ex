@@ -112,4 +112,5 @@ public final class AutoImageCaptureExtenderImpl implements ImageCaptureExtenderI
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
         throw new RuntimeException("Stub, replace with implementation.");
     }
+
 }

@@ -21,6 +21,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.util.Pair;
+import android.util.Range;
 import android.util.Size;
 
 import java.util.List;
@@ -88,6 +89,22 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      * @hide
      */
     List<Pair<Integer, Size[]>> getSupportedResolutions();
+
+    /**
+     * Returns the estimated capture latency range in milliseconds for the target capture
+     * resolution.
+     *
+     * <p>This includes the time spent processing the multi-frame capture request along with any
+     * additional time for encoding of the processed buffer in the framework if necessary.</p>
+     *
+     * @param captureOutputSize size of the capture output surface. If it is null or not in the
+     *                          supported output sizes, maximum capture output size is used for
+     *                          the estimation.
+     * @return the range of estimated minimal and maximal capture latency in milliseconds, or
+     * null if no capture latency info can be provided.
+     * @since 1.2
+     */
+    Range<Long> getEstimatedCaptureLatencyRange(Size captureOutputSize);
 
     /**
      * Return a list of orthogonal capture request keys.

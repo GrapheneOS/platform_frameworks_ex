@@ -25,6 +25,7 @@ import android.media.ImageWriter;
 import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
+import android.util.Range;
 import android.util.Size;
 import android.view.Surface;
 
@@ -239,6 +240,11 @@ public final class AutoImageCaptureExtenderImpl implements ImageCaptureExtenderI
      */
     @Override
     public List<Pair<Integer, Size[]>> getSupportedResolutions() {
+        return null;
+    }
+
+    @Override
+    public Range<Long> getEstimatedCaptureLatencyRange(Size captureOutputSize) {
         return null;
     }
 

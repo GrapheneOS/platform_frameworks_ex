@@ -27,6 +27,7 @@ import android.util.Pair;
 import android.util.Size;
 import android.view.Surface;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.List;
@@ -42,8 +43,6 @@ import java.util.List;
  */
 public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
     private static final int DEFAULT_STAGE_ID = 0;
-
-    ImageWriter mWriter;
 
     /**
      * @hide
@@ -109,17 +108,32 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
         return null;
     }
 
-    private PreviewImageProcessorImpl mProcessor = new PreviewImageProcessorImpl() {
+    private HdrPreviewProcessor mProcessor = new HdrPreviewProcessor();
+
+    private static class HdrPreviewProcessor implements PreviewImageProcessorImpl, Closeable {
         Surface mSurface;
         int mFormat = -1;
+        final Object mLock = new Object(); // Synchronize access to 'mWriter'
+        ImageWriter mWriter;
 
-        private void setWindowSurface() {
-            if (mSurface != null && mFormat >= 0) {
+        public void close() {
+            synchronized(mLock) {
                 if (mWriter != null) {
                     mWriter.close();
+                    mWriter = null;
                 }
+            }
+        }
 
-                mWriter = ImageWriter.newInstance(mSurface, 2, mFormat);
+        private void setWindowSurface() {
+            synchronized(mLock) {
+                if (mSurface != null && mFormat >= 0) {
+                    if (mWriter != null) {
+                        mWriter.close();
+                    }
+
+                    mWriter = ImageWriter.newInstance(mSurface, 2, mFormat);
+                }
             }
         }
 
@@ -132,7 +146,11 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
 
         @Override
         public void process(Image image, TotalCaptureResult result) {
-            mWriter.queueInputImage(image);
+            synchronized(mLock) {
+                if (mWriter != null) {
+                    mWriter.queueInputImage(image);
+                }
+            }
         }
 
         @Override
@@ -209,10 +227,7 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
      */
     @Override
     public void onDeInit() {
-        if (mWriter != null) {
-            mWriter.close();
-            mWriter = null;
-        }
+        mProcessor.close();
     }
 
     /**

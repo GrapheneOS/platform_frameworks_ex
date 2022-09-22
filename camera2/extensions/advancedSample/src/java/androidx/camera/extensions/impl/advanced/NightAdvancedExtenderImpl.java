@@ -229,6 +229,8 @@ public class NightAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
                 public void onCaptureCompleted(RequestProcessorImpl.Request request,
                         TotalCaptureResult totalCaptureResult) {
 
+                    addCaptureResultKeys(seqId, totalCaptureResult, captureCallback);
+
                     mCaptureResultImageMatcher.setCameraCaptureCallback(
                                 totalCaptureResult);
 

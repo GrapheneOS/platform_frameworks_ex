@@ -51,12 +51,13 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executor;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @SuppressLint("UnknownNullness")
-public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
+public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
 
     static {
         try {
@@ -72,10 +73,8 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
     }
 
     @Override
-    public boolean isExtensionAvailable(String cameraId,
-            Map<String, CameraCharacteristics> characteristicsMap) {
-        return false;
-    }
+    public abstract boolean isExtensionAvailable(String cameraId,
+            Map<String, CameraCharacteristics> characteristicsMap);
 
     @Override
     public void init(String cameraId,
@@ -209,7 +208,7 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         }
 
         protected void addSessionParameter(Camera2SessionConfigImplBuilder builder) {
-
+            // default empty implementation
         }
 
         @Override
@@ -243,11 +242,75 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
             }
         }
 
+        protected void addTriggerRequestKeys(RequestBuilder builder,
+                Map<CaptureRequest.Key<?>, Object> triggers) {
+            HashSet<CaptureRequest.Key> supportedCaptureRequestKeys =
+                    new HashSet<>(getAvailableCaptureRequestKeys());
+
+            for (CaptureRequest.Key<?> key : triggers.keySet()) {
+                if (supportedCaptureRequestKeys.contains(key)) {
+                    Object value = triggers.get(key);
+                    builder.setParameters(key, value);
+                }
+            }
+        }
+
         @Override
         public int startTrigger(Map<CaptureRequest.Key<?>, Object> triggers,
-                CaptureCallback callback) {
-            /* TODO */
-            return 0;
+                CaptureCallback captureCallback) {
+            RequestBuilder builder = new RequestBuilder(mPreviewOutputConfig.getId(),
+                    CameraDevice.TEMPLATE_PREVIEW, 0);
+            addTriggerRequestKeys(builder, triggers);
+
+            final int seqId = mNextCaptureSequenceId.getAndIncrement();
+
+            RequestProcessorImpl.Callback callback = new RequestProcessorImpl.Callback() {
+                @Override
+                public void onCaptureStarted(RequestProcessorImpl.Request request, long frameNumber,
+                        long timestamp) {
+                    captureCallback.onCaptureStarted(seqId, timestamp);
+                }
+
+                @Override
+                public void onCaptureProgressed(RequestProcessorImpl.Request request,
+                        CaptureResult partialResult) {
+
+                }
+
+                @Override
+                public void onCaptureCompleted(RequestProcessorImpl.Request request,
+                        TotalCaptureResult totalCaptureResult) {
+                    addCaptureResultKeys(seqId, totalCaptureResult, captureCallback);
+
+                    captureCallback.onCaptureProcessStarted(seqId);
+                }
+
+                @Override
+                public void onCaptureFailed(RequestProcessorImpl.Request request,
+                        CaptureFailure captureFailure) {
+                    captureCallback.onCaptureFailed(seqId);
+                }
+
+                @Override
+                public void onCaptureBufferLost(RequestProcessorImpl.Request request,
+                        long frameNumber, int outputStreamId) {
+                    captureCallback.onCaptureFailed(seqId);
+                }
+
+                @Override
+                public void onCaptureSequenceCompleted(int sequenceId, long frameNumber) {
+                    captureCallback.onCaptureSequenceCompleted(seqId);
+                }
+
+                @Override
+                public void onCaptureSequenceAborted(int sequenceId) {
+                    captureCallback.onCaptureSequenceAborted(seqId);
+                }
+            };
+
+            mRequestProcessor.submit(builder.build(), callback);
+
+            return seqId;
         }
 
         @Override
@@ -262,6 +325,8 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                                 .Builder(mCaptureOutputSurfaceConfig.getSurface())
                                 .setImageFormat(ImageFormat.JPEG)
                                 .setMaxImages(MAX_NUM_IMAGES)
+                                // For JPEG format, width x height should be set to (w*h) x 1
+                                // since the JPEG image is returned as a 1D byte array
                                 .setWidthAndHeight(mCaptureOutputSurfaceConfig.getSize().getWidth()
                                         * mCaptureOutputSurfaceConfig.getSize().getHeight(), 1)
                                 .build();
@@ -308,6 +373,8 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                 @Override
                 public void onCaptureCompleted(RequestProcessorImpl.Request request,
                         TotalCaptureResult totalCaptureResult) {
+                    addCaptureResultKeys(seqId, totalCaptureResult, captureCallback);
+
                     captureCallback.onCaptureProcessStarted(seqId);
                 }
 
@@ -337,6 +404,28 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
             mRequestProcessor.setRepeating(builder.build(), callback);
 
             return seqId;
+        }
+
+        protected void addCaptureResultKeys(
+            @NonNull int seqId,
+            @NonNull TotalCaptureResult result,
+            @NonNull CaptureCallback captureCallback) {
+            HashMap<CaptureResult.Key, Object> captureResults = new HashMap<>();
+
+            Long shutterTimestamp = result.get(CaptureResult.SENSOR_TIMESTAMP);
+
+            if (shutterTimestamp != null) {
+
+                List<CaptureResult.Key> captureResultKeys = getAvailableCaptureResultKeys();
+                for (CaptureResult.Key key : captureResultKeys) {
+                    if (result.get(key) != null) {
+                        captureResults.put(key, result.get(key));
+                    }
+                }
+
+                captureCallback.onCaptureCompleted(shutterTimestamp, seqId,
+                        captureResults);
+            }
         }
 
         protected void addCaptureRequestParameters(List<RequestProcessorImpl.Request> requestList) {
@@ -372,6 +461,8 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                         TotalCaptureResult totalCaptureResult) {
                     RequestBuilder.RequestProcessorRequest requestProcessorRequest =
                             (RequestBuilder.RequestProcessorRequest) request;
+
+                    addCaptureResultKeys(seqId, totalCaptureResult, captureCallback);
 
                     mImageCaptureCaptureResultImageMatcher.setCameraCaptureCallback(
                             totalCaptureResult,
@@ -453,6 +544,7 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                 }
 
                 if (captureSurfaceWriterImageFormat == ImageFormat.JPEG) {
+                    // Simple processing sample that encodes image from YUV to JPEG
                     Image yuvImage = imageDataPairs.get(DEFAULT_CAPTURE_ID).first.get();
 
                     Integer jpegOrientation = JPEG_DEFAULT_ROTATION;
@@ -470,6 +562,7 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                     resultImage.setTimestamp(yuvImage.getTimestamp());
 
                 } else {
+                    // Simple processing sample that transfers bytes and returns image as is
                     ByteBuffer yByteBuffer = resultImage.getPlanes()[0].getBuffer();
                     ByteBuffer uByteBuffer = resultImage.getPlanes()[2].getBuffer();
                     ByteBuffer vByteBuffer = resultImage.getPlanes()[1].getBuffer();
@@ -509,17 +602,19 @@ public class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
     }
 
     @Override
-    public SessionProcessorImpl createSessionProcessor() {
-        return new BaseAdvancedSessionProcessor();
-    }
+    public abstract SessionProcessorImpl createSessionProcessor();
 
     @Override
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
-        return new ArrayList<>();
+        final CaptureRequest.Key [] CAPTURE_REQUEST_SET = {CaptureRequest.JPEG_QUALITY,
+                CaptureRequest.JPEG_ORIENTATION};
+        return Arrays.asList(CAPTURE_REQUEST_SET);
     }
 
     @Override
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
-        return new ArrayList<>();
+        final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.JPEG_QUALITY,
+                CaptureResult.JPEG_ORIENTATION};
+        return Arrays.asList(CAPTURE_RESULT_SET);
     }
 }

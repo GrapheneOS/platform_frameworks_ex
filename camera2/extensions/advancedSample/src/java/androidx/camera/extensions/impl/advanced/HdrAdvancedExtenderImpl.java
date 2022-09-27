@@ -215,7 +215,7 @@ public class HdrAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
                                             @NonNull TotalCaptureResult totalCaptureResult,
                                             int captureId) {
                                         processImageCapture(imageReferenceImpl, totalCaptureResult,
-                                                captureId);
+                                                captureId, seqId, captureCallback);
                                     }
                 });
             }
@@ -223,10 +223,11 @@ public class HdrAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
             return seqId;
         }
 
-        @Override
-        protected void processImageCapture(@NonNull ImageReferenceImpl imageReferenceImpl,
+        private void processImageCapture(@NonNull ImageReferenceImpl imageReferenceImpl,
             @NonNull TotalCaptureResult totalCaptureResult,
-            int captureId) {
+            int captureId,
+            int seqId,
+            @NonNull CaptureCallback captureCallback) {
 
             mCaptureResults.put(captureId, new Pair<>(imageReferenceImpl, totalCaptureResult));
 
@@ -256,6 +257,8 @@ public class HdrAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
                     JpegEncoder.encodeToJpeg(yuvImage, resultImage, jpegOrientation,
                             JPEG_DEFAULT_QUALITY);
 
+                    addCaptureResultKeys(seqId, imageDataPairs.get(UNDER_EXPOSED_CAPTURE_ID)
+                            .second, captureCallback);
                     resultImage.setTimestamp(imageDataPairs.get(UNDER_EXPOSED_CAPTURE_ID)
                             .first.get().getTimestamp());
 
@@ -271,6 +274,8 @@ public class HdrAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
                     vByteBuffer.put(imageDataPairs.get(
                         NORMAL_EXPOSED_CAPTURE_ID).first.get().getPlanes()[1].getBuffer());
 
+                    addCaptureResultKeys(seqId, imageDataPairs.get(UNDER_EXPOSED_CAPTURE_ID)
+                            .second, captureCallback);
                     resultImage.setTimestamp(imageDataPairs.get(
                         UNDER_EXPOSED_CAPTURE_ID).first.get().getTimestamp());
                 }
@@ -293,5 +298,23 @@ public class HdrAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
     @Override
     public SessionProcessorImpl createSessionProcessor() {
         return new HDRAdvancedSessionProcessor();
+    }
+
+    @Override
+    public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
+        final CaptureRequest.Key [] CAPTURE_REQUEST_SET = {CaptureRequest.CONTROL_ZOOM_RATIO,
+            CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_REGIONS,
+            CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.JPEG_QUALITY,
+            CaptureRequest.JPEG_ORIENTATION};
+        return Arrays.asList(CAPTURE_REQUEST_SET);
+    }
+
+    @Override
+    public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
+        final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.CONTROL_ZOOM_RATIO,
+            CaptureResult.CONTROL_AF_MODE, CaptureResult.CONTROL_AF_REGIONS,
+            CaptureResult.CONTROL_AF_TRIGGER, CaptureResult.CONTROL_AF_STATE,
+            CaptureResult.JPEG_QUALITY, CaptureResult.JPEG_ORIENTATION};
+        return Arrays.asList(CAPTURE_RESULT_SET);
     }
 }

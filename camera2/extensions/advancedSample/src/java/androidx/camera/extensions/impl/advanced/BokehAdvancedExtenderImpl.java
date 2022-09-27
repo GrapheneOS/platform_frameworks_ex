@@ -24,6 +24,8 @@ import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.TotalCaptureResult;
 import android.os.Build;
 import android.util.Log;
 
@@ -33,6 +35,9 @@ import android.view.Surface;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -88,5 +93,23 @@ public class BokehAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
     @Override
     public SessionProcessorImpl createSessionProcessor() {
         return new BokehAdvancedSessionProcessor();
+    }
+
+    @Override
+    public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
+        final CaptureRequest.Key [] CAPTURE_REQUEST_SET = {CaptureRequest.CONTROL_AE_MODE,
+            CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_LOCK,
+            CaptureRequest.FLASH_MODE, CaptureRequest.JPEG_QUALITY,
+            CaptureRequest.JPEG_ORIENTATION};
+        return Arrays.asList(CAPTURE_REQUEST_SET);
+    }
+
+    @Override
+    public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
+        final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.CONTROL_AE_MODE,
+            CaptureResult.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureResult.CONTROL_AE_LOCK,
+            CaptureResult.CONTROL_AE_STATE, CaptureResult.FLASH_MODE,
+            CaptureResult.FLASH_STATE, CaptureResult.JPEG_QUALITY, CaptureResult.JPEG_ORIENTATION};
+        return Arrays.asList(CAPTURE_RESULT_SET);
     }
 }

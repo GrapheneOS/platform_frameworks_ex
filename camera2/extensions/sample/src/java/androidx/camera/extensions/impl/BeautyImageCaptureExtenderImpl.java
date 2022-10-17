@@ -21,6 +21,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageWriter;
@@ -279,5 +280,10 @@ public final class BeautyImageCaptureExtenderImpl implements ImageCaptureExtende
     @Override
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public int onSessionType() {
+        return SessionConfiguration.SESSION_REGULAR;
     }
 }

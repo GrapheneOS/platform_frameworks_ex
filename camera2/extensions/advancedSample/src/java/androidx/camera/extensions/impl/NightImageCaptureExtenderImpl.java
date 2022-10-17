@@ -112,4 +112,9 @@ public final class NightImageCaptureExtenderImpl implements ImageCaptureExtender
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
         throw new RuntimeException("Stub, replace with implementation.");
     }
+
+    @Override
+    public int onSessionType() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
 }

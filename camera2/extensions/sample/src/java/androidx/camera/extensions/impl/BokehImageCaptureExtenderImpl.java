@@ -20,6 +20,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.media.Image;
 import android.media.ImageWriter;
 import android.os.Build;
@@ -340,5 +341,10 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
             CaptureResult.CONTROL_AE_STATE, CaptureResult.FLASH_MODE,
             CaptureResult.FLASH_STATE};
         return Arrays.asList(CAPTURE_RESULT_SET);
+    }
+
+    @Override
+    public int onSessionType() {
+        return SessionConfiguration.SESSION_REGULAR;
     }
 }

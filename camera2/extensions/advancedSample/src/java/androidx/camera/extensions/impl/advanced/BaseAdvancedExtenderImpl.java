@@ -319,8 +319,7 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
 
             if (mCaptureOutputSurfaceConfig.getSurface() != null) {
                 synchronized (mLockCaptureSurfaceImageWriter) {
-                    if (JpegEncoder.imageFormatToPublic(mCaptureOutputSurfaceConfig
-                            .getImageFormat()) == ImageFormat.JPEG) {
+                    if (mCaptureOutputSurfaceConfig.getImageFormat() == ImageFormat.JPEG) {
                         mCaptureSurfaceImageWriter = new ImageWriter
                                 .Builder(mCaptureOutputSurfaceConfig.getSurface())
                                 .setImageFormat(ImageFormat.JPEG)

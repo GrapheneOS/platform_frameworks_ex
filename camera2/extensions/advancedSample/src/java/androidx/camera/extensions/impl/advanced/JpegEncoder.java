@@ -121,16 +121,4 @@ public class JpegEncoder {
             0, 0, yuvImage.getWidth(), yuvImage.getHeight(),
             jpegOrientation);
     }
-
-    public static int imageFormatToPublic(int format) {
-        switch (format) {
-            case HAL_PIXEL_FORMAT_BLOB:
-                return ImageFormat.JPEG;
-            case ImageFormat.JPEG:
-                throw new IllegalArgumentException(
-                        "ImageFormat.JPEG is an unknown internal format");
-            default:
-                return format;
-        }
-    }
 }

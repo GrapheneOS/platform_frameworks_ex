@@ -21,6 +21,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.MeteringRectangle;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.media.ImageWriter;
 import android.media.Image;
 import android.util.Pair;
@@ -252,5 +253,10 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
     @Override
     public CaptureStageImpl onDisableSession() {
         return null;
+    }
+
+    @Override
+    public int onSessionType() {
+        return SessionConfiguration.SESSION_REGULAR;
     }
 }

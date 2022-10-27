@@ -113,4 +113,8 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
         throw new RuntimeException("Stub, replace with implementation.");
     }
 
+    @Override
+    public int onSessionType() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
 }

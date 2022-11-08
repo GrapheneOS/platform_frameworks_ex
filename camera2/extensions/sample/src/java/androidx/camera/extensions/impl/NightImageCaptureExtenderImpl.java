@@ -263,4 +263,9 @@ public final class NightImageCaptureExtenderImpl implements ImageCaptureExtender
     public int onSessionType() {
         return SessionConfiguration.SESSION_REGULAR;
     }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        return false;
+    }
 }

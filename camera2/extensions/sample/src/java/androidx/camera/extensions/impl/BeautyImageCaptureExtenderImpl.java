@@ -286,4 +286,9 @@ public final class BeautyImageCaptureExtenderImpl implements ImageCaptureExtende
     public int onSessionType() {
         return SessionConfiguration.SESSION_REGULAR;
     }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        return false;
+    }
 }

@@ -263,4 +263,9 @@ public final class AutoImageCaptureExtenderImpl implements ImageCaptureExtenderI
     public int onSessionType() {
         return SessionConfiguration.SESSION_REGULAR;
     }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        return false;
+    }
 }

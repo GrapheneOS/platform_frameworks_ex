@@ -88,4 +88,9 @@ public class BeautyAdvancedExtenderImpl implements AdvancedExtenderImpl {
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
         throw new RuntimeException("Stub, replace with implementation.");
     }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
 }

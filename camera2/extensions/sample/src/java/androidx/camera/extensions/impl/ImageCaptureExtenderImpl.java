@@ -138,5 +138,14 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      * @since 1.3
      */
     List<CaptureResult.Key> getAvailableCaptureResultKeys();
+
+    /**
+     * Advertise support for {@link ProcessResultImpl#onCaptureProcessProgressed}.
+     *
+     * @return {@code true} in case the process progress callback is supported and is expected to
+     * be triggered, {@code false} otherwise.
+     * @since 1.4
+     */
+    boolean isCaptureProcessProgressAvailable();
 }
 

@@ -484,6 +484,7 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                 @Override
                 public void onCaptureSequenceCompleted(int sequenceId, long frameNumber) {
                     captureCallback.onCaptureSequenceCompleted(seqId);
+                    captureCallback.onCaptureProcessProgressed(100);
                 }
 
                 @Override
@@ -616,5 +617,10 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.JPEG_QUALITY,
                 CaptureResult.JPEG_ORIENTATION};
         return Arrays.asList(CAPTURE_RESULT_SET);
+    }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        return true;
     }
 }

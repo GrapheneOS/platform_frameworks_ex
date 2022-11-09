@@ -347,4 +347,9 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
     public int onSessionType() {
         return SessionConfiguration.SESSION_REGULAR;
     }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        return false;
+    }
 }

@@ -277,5 +277,20 @@ public interface SessionProcessorImpl {
          */
         void onCaptureCompleted(long timestamp, int captureSequenceId,
                 Map<CaptureResult.Key, Object> result);
+
+        /**
+         * Capture progress callback that needs to be called when the process capture is
+         * ongoing and includes the estimated progress of the processing.
+         *
+         * <p>Extensions must ensure that they always call this callback with monotonically
+         * increasing values.</p>
+         *
+         * <p>Extensions are allowed to trigger this callback multiple times but at the minimum the
+         * callback is expected to be called once when processing is done with value 100.</p>
+         *
+         * @param progress             Value between 0 and 100.
+         * @since 1.4
+         */
+        void onCaptureProcessProgressed(int progress);
     }
 }

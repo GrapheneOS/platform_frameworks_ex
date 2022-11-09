@@ -188,9 +188,12 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
                                 if (executor != null) {
                                     executor.execute(() -> resultCallback.onCaptureCompleted(
                                             shutterTimestamp, captureResults));
+                                    executor.execute(() ->
+                                            resultCallback.onCaptureProcessProgressed(100));
                                 } else {
                                     resultCallback.onCaptureCompleted(shutterTimestamp,
                                             captureResults);
+                                    resultCallback.onCaptureProcessProgressed(100);
                                 }
                             }
                         }
@@ -356,5 +359,10 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     @Override
     public int onSessionType() {
         return SessionConfiguration.SESSION_REGULAR;
+    }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        return true;
     }
 }

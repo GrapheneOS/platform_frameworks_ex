@@ -185,4 +185,13 @@ public interface AdvancedExtenderImpl {
      * @since 1.3
      */
     List<CaptureResult.Key> getAvailableCaptureResultKeys();
+
+    /**
+     * Advertise support for {@link SessionProcessorImpl#onCaptureProcessProgressed}.
+     *
+     * @return {@code true} in case the process progress callback is supported and is expected to
+     * be triggered, {@code false} otherwise.
+     * @since 1.4
+     */
+    boolean isCaptureProcessProgressAvailable();
 }

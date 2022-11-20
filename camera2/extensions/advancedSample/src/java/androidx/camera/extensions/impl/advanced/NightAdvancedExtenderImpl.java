@@ -86,14 +86,12 @@ public class NightAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
         public Camera2SessionConfigImpl initSession(@NonNull String cameraId,
                 @NonNull Map<String, CameraCharacteristics> cameraCharacteristicsMap,
                 @NonNull Context context,
-                @NonNull OutputSurfaceImpl previewSurfaceConfig,
-                @NonNull OutputSurfaceImpl imageCaptureSurfaceConfig,
-                @Nullable OutputSurfaceImpl imageAnalysisSurfaceConfig) {
+                @NonNull OutputSurfaceConfigurationImpl surfaceConfigs) {
 
             Log.d(TAG, "initSession cameraId=" + cameraId);
 
-            mPreviewOutputSurfaceConfig = previewSurfaceConfig;
-            mCaptureOutputSurfaceConfig = imageCaptureSurfaceConfig;
+            mPreviewOutputSurfaceConfig = surfaceConfigs.getPreviewOutputSurface();
+            mCaptureOutputSurfaceConfig = surfaceConfigs.getImageCaptureOutputSurface();
 
             Camera2SessionConfigImplBuilder builder =
                     new Camera2SessionConfigImplBuilder()
@@ -105,7 +103,7 @@ public class NightAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
 
                 previewOutputConfigBuilder =
                         Camera2OutputConfigImplBuilder.newImageReaderConfig(
-                                previewSurfaceConfig.getSize(),
+                                mPreviewOutputSurfaceConfig.getSize(),
                                 ImageFormat.YUV_420_888,
                                 BASIC_CAPTURE_PROCESS_MAX_IMAGES);
 
@@ -120,7 +118,7 @@ public class NightAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
 
                 captureOutputConfigBuilder =
                         Camera2OutputConfigImplBuilder.newImageReaderConfig(
-                                imageCaptureSurfaceConfig.getSize(),
+                                mCaptureOutputSurfaceConfig.getSize(),
                                 ImageFormat.YUV_420_888,
                                 BASIC_CAPTURE_PROCESS_MAX_IMAGES);
 

@@ -70,6 +70,12 @@ public class HdrAdvancedExtenderImpl implements AdvancedExtenderImpl {
     }
 
     @Override
+    public Map<Integer, List<Size>> getSupportedPostviewResolutions(
+            Size captureSize) {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
+
+    @Override
     public List<Size> getSupportedYuvAnalysisResolutions(
             String cameraId) {
         throw new RuntimeException("Stub, replace with implementation.");
@@ -92,6 +98,11 @@ public class HdrAdvancedExtenderImpl implements AdvancedExtenderImpl {
 
     @Override
     public boolean isCaptureProcessProgressAvailable() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
+
+    @Override
+    public boolean isPostviewAvailable() {
         throw new RuntimeException("Stub, replace with implementation.");
     }
 }

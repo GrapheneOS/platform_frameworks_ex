@@ -224,6 +224,26 @@ public interface SessionProcessorImpl {
     void stopRepeating();
 
     /**
+     * Start a multi-frame capture with a postview. {@link #startCapture(CaptureCallback)}
+     * will be used for captures without a postview request.
+     *
+     * Postview will be available before the capture. Upon postview completion,
+     * {@code OnImageAvailableListener#onImageAvailable} will be called on the ImageReader
+     * that creates the postview output surface. When the capture is completed,
+     * {@link CaptureCallback#onCaptureSequenceCompleted} is called and
+     * {@code OnImageAvailableListener#onImageAvailable} will also be called on the ImageReader
+     * that creates the image capture output surface.
+     *
+     * <p>Only one capture can perform at a time. Starting a capture when another capture is
+     * running will cause onCaptureFailed to be called immediately.
+     *
+     * @param callback a callback to report the status.
+     * @return the id of the capture sequence.
+     * @since 1.4
+     */
+    int startCaptureWithPostview(CaptureCallback callback);
+
+    /**
      * Start a multi-frame capture.
      *
      * When the capture is completed, {@link CaptureCallback#onCaptureSequenceCompleted}

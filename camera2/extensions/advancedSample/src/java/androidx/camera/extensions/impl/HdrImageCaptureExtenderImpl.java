@@ -122,4 +122,9 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     public boolean isCaptureProcessProgressAvailable() {
         throw new RuntimeException("Stub, replace with implementation.");
     }
+
+    @Override
+    public Pair<Long, Long> getRealtimeCaptureLatency() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
 }

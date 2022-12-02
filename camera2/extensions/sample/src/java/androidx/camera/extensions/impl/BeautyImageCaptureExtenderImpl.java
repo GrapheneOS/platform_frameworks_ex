@@ -291,4 +291,9 @@ public final class BeautyImageCaptureExtenderImpl implements ImageCaptureExtende
     public boolean isCaptureProcessProgressAvailable() {
         return false;
     }
+
+    @Override
+    public Pair<Long, Long> getRealtimeCaptureLatency() {
+        return null;
+    }
 }

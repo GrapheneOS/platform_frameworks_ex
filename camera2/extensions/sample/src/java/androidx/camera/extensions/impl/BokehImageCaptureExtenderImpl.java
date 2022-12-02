@@ -352,4 +352,9 @@ public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtender
     public boolean isCaptureProcessProgressAvailable() {
         return false;
     }
+
+    @Override
+    public Pair<Long, Long> getRealtimeCaptureLatency() {
+        return null;
+    }
 }

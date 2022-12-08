@@ -18,6 +18,7 @@ package androidx.camera.extensions.impl;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.MeteringRectangle;
@@ -193,6 +194,14 @@ public final class HdrPreviewExtenderImpl implements PreviewExtenderImpl {
                         captureResults.add(new Pair<>(CaptureResult.JPEG_ORIENTATION,
                                 jpegOrientation));
                     }
+
+                    Integer strength = result.get(CaptureResult.EXTENSION_STRENGTH);
+                    if (strength != null) {
+                        captureResults.add(new Pair<>(CaptureResult.EXTENSION_STRENGTH, strength));
+                    }
+
+                    captureResults.add(new Pair<>(CaptureResult.EXTENSION_CURRENT_TYPE,
+                                CameraExtensionCharacteristics.EXTENSION_HDR));
 
                     if (executor != null) {
                         executor.execute(() -> resultCallback.onCaptureCompleted(shutterTimestamp,

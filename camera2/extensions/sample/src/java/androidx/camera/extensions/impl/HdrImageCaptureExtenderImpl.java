@@ -17,6 +17,7 @@ package androidx.camera.extensions.impl;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
@@ -185,6 +186,16 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
                                             jpegOrientation));
                                 }
 
+                                Integer strength = result.second.get(
+                                        CaptureResult.EXTENSION_STRENGTH);
+                                if (strength != null) {
+                                    captureResults.add(new Pair<>(CaptureResult.EXTENSION_STRENGTH,
+                                            strength));
+                                }
+
+                                captureResults.add(new Pair<>(CaptureResult.EXTENSION_CURRENT_TYPE,
+                                            CameraExtensionCharacteristics.EXTENSION_HDR));
+
                                 if (executor != null) {
                                     executor.execute(() -> resultCallback.onCaptureCompleted(
                                             shutterTimestamp, captureResults));
@@ -344,7 +355,7 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
         final CaptureRequest.Key [] CAPTURE_REQUEST_SET = {CaptureRequest.CONTROL_ZOOM_RATIO,
             CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_REGIONS,
-            CaptureRequest.CONTROL_AF_TRIGGER};
+            CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.EXTENSION_STRENGTH};
         return Arrays.asList(CAPTURE_REQUEST_SET);
     }
 
@@ -352,7 +363,8 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
         final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.CONTROL_ZOOM_RATIO,
             CaptureResult.CONTROL_AF_MODE, CaptureResult.CONTROL_AF_REGIONS,
-            CaptureResult.CONTROL_AF_TRIGGER, CaptureResult.CONTROL_AF_STATE};
+            CaptureResult.CONTROL_AF_TRIGGER, CaptureResult.CONTROL_AF_STATE,
+            CaptureResult.EXTENSION_CURRENT_TYPE, CaptureResult.EXTENSION_STRENGTH};
         return Arrays.asList(CAPTURE_RESULT_SET);
     }
 

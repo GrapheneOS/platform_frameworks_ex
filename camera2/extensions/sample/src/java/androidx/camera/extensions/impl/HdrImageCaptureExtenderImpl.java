@@ -377,4 +377,9 @@ public final class HdrImageCaptureExtenderImpl implements ImageCaptureExtenderIm
     public boolean isCaptureProcessProgressAvailable() {
         return true;
     }
+
+    @Override
+    public Pair<Long, Long> getRealtimeCaptureLatency() {
+        return null;
+    }
 }

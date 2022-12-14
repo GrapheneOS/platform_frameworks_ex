@@ -615,6 +615,11 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         public void abortCapture(int captureSequenceId) {
 
         }
+
+        @Override
+        public Pair<Long, Long> getRealtimeCaptureLatency() {
+            return null;
+        }
     }
 
     public static class OutputSurfaceConfigurationImplImpl implements OutputSurfaceConfigurationImpl {

@@ -123,5 +123,8 @@ public final class AutoImageCaptureExtenderImpl implements ImageCaptureExtenderI
         throw new RuntimeException("Stub, replace with implementation.");
     }
 
-
+    @Override
+    public Pair<Long, Long> getRealtimeCaptureLatency() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
 }

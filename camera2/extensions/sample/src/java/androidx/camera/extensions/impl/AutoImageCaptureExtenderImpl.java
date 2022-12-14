@@ -268,4 +268,9 @@ public final class AutoImageCaptureExtenderImpl implements ImageCaptureExtenderI
     public boolean isCaptureProcessProgressAvailable() {
         return false;
     }
+
+    @Override
+    public Pair<Long, Long> getRealtimeCaptureLatency() {
+        return null;
+    }
 }

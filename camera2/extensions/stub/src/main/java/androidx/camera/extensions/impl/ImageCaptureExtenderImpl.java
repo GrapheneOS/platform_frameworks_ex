@@ -85,6 +85,21 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
     List<Pair<Integer, Size[]>> getSupportedResolutions();
 
     /**
+     * Returns the customized supported postview resolutions for a still capture using
+     * its size.
+     *
+     * <p>Pair list composed with {@link ImageFormat} and {@link Size} array will be returned.
+     *
+     * <p>The returned resolutions should be subset of the supported sizes retrieved from
+     * {@link android.hardware.camera2.params.StreamConfigurationMap} for the camera device.
+     *
+     * @return the customized supported resolutions, or null to support all sizes retrieved from
+     *         {@link android.hardware.camera2.params.StreamConfigurationMap}.
+     * @since 1.4
+     */
+    List<Pair<Integer, Size[]>> getSupportedPostviewResolutions(Size captureSize);
+
+    /**
      * Returns the estimated capture latency range in milliseconds for the target capture
      * resolution.
      *
@@ -188,4 +203,15 @@ public interface ImageCaptureExtenderImpl extends ExtenderStateListener {
      * @since 1.4
      */
     Pair<Long, Long> getRealtimeCaptureLatency();
+
+    /**
+     * Indicates whether the extension supports the postview for still capture feature.
+     * If the extension is using HAL processing, false should be returned since the
+     * postview feature is not currently supported for this case.
+     *
+     * @return {@code true} in case postview for still capture is supported
+     * {@code false} otherwise.
+     * @since 1.4
+     */
+    boolean isPostviewAvailable();
 }

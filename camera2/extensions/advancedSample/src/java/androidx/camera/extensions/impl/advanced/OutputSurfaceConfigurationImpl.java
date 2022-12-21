@@ -30,4 +30,6 @@ public interface OutputSurfaceConfigurationImpl {
     public OutputSurfaceImpl getImageCaptureOutputSurface();
 
     public OutputSurfaceImpl getImageAnalysisOutputSurface();
+
+    public OutputSurfaceImpl getPostviewOutputSurface();
 }

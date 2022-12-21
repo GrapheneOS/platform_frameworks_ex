@@ -116,6 +116,11 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
     }
 
     @Override
+    public Map<Integer, List<Size>> getSupportedPostviewResolutions(Size captureSize) {
+        return new HashMap<>();
+    }
+
+    @Override
     public List<Size> getSupportedYuvAnalysisResolutions(
             String cameraId) {
         return null;
@@ -217,7 +222,8 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
             // called. This is just a sample for earlier versions if wanting to redirect this call.
             OutputSurfaceConfigurationImplImpl surfaceConfigs =
                     new OutputSurfaceConfigurationImplImpl(previewSurfaceConfig,
-                    imageCaptureSurfaceConfig, imageAnalysisSurfaceConfig);
+                    imageCaptureSurfaceConfig, imageAnalysisSurfaceConfig,
+                    null /*postviewSurfaceConfig*/);
 
             return initSession(cameraId, cameraCharacteristicsMap, context, surfaceConfigs);
         }
@@ -452,6 +458,11 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         }
 
         @Override
+        public int startCaptureWithPostview(@NonNull CaptureCallback captureCallback) {
+            return startCapture(captureCallback);
+        }
+
+        @Override
         public int startCapture(@NonNull CaptureCallback captureCallback) {
             List<RequestProcessorImpl.Request> requestList = new ArrayList<>();
             addCaptureRequestParameters(requestList);
@@ -626,13 +637,16 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         private OutputSurfaceImpl mOutputPreviewSurfaceImpl;
         private OutputSurfaceImpl mOutputImageCaptureSurfaceImpl;
         private OutputSurfaceImpl mOutputImageAnalysisSurfaceImpl;
+        private OutputSurfaceImpl mOutputPostviewSurfaceImpl;
 
         public OutputSurfaceConfigurationImplImpl(OutputSurfaceImpl previewSurfaceConfig,
                 OutputSurfaceImpl imageCaptureSurfaceConfig,
-                OutputSurfaceImpl imageAnalysisSurfaceConfig) {
+                OutputSurfaceImpl imageAnalysisSurfaceConfig,
+                OutputSurfaceImpl postviewSurfaceConfig) {
             mOutputPreviewSurfaceImpl = previewSurfaceConfig;
             mOutputImageCaptureSurfaceImpl = imageCaptureSurfaceConfig;
             mOutputImageAnalysisSurfaceImpl = imageAnalysisSurfaceConfig;
+            mOutputPostviewSurfaceImpl = postviewSurfaceConfig;
         }
 
         @Override
@@ -648,6 +662,11 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         @Override
         public OutputSurfaceImpl getImageAnalysisOutputSurface() {
             return mOutputImageAnalysisSurfaceImpl;
+        }
+
+        @Override
+        public OutputSurfaceImpl getPostviewOutputSurface() {
+            return mOutputPostviewSurfaceImpl;
         }
     }
 
@@ -671,5 +690,10 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
     @Override
     public boolean isCaptureProcessProgressAvailable() {
         return true;
+    }
+
+    @Override
+    public boolean isPostviewAvailable() {
+        return false;
     }
 }

@@ -17,6 +17,7 @@ package androidx.camera.extensions.impl;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.util.Pair;
@@ -25,6 +26,7 @@ import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.extensions.impl.serviceforward.ForwardImageCaptureExtender;
 
 import java.util.List;
 
@@ -35,90 +37,8 @@ import java.util.List;
  *
  * @since 1.0
  */
-public final class AutoImageCaptureExtenderImpl implements ImageCaptureExtenderImpl {
-    public AutoImageCaptureExtenderImpl() {}
-
-    @Override
-    public boolean isExtensionAvailable(@NonNull String cameraId,
-            @Nullable CameraCharacteristics cameraCharacteristics) {
-        throw new RuntimeException("Stub, replace with implementation.");
+public final class AutoImageCaptureExtenderImpl extends ForwardImageCaptureExtender {
+    public AutoImageCaptureExtenderImpl() {
+        super(CameraExtensionCharacteristics.EXTENSION_AUTOMATIC);
     }
-
-    @Override
-    public void init(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics) {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public CaptureProcessorImpl getCaptureProcessor() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public List<CaptureStageImpl> getCaptureStages() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Override
-    public int getMaxCaptureStage() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Override
-    public void onInit(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics,
-            @NonNull Context context) {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Override
-    public void onDeInit() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onPresetSession() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onEnableSession() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onDisableSession() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public List<Pair<Integer, Size[]>> getSupportedResolutions() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public Range<Long> getEstimatedCaptureLatencyRange(@Nullable Size captureOutputSize) {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @NonNull
-    @Override
-    public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @NonNull
-    @Override
-    public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
 }

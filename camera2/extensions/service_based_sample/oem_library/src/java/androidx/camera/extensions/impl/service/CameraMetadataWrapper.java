@@ -39,6 +39,10 @@ public class CameraMetadataWrapper implements Parcelable {
         }
     }
 
+    public CameraMetadataWrapper(CameraMetadataNative cameraMetadataNative) {
+        mCameraMetadataNative = cameraMetadataNative;
+    }
+
     protected CameraMetadataWrapper(Parcel in) {
         mCameraMetadataNative = in.readParcelable(CameraMetadataNative.class.getClassLoader());
     }

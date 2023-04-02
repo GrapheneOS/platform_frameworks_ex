@@ -19,11 +19,16 @@ package androidx.camera.extensions.impl.service;
 import androidx.camera.extensions.impl.service.IOnExtensionsInitializedCallback;
 import androidx.camera.extensions.impl.service.IOnExtensionsDeinitializedCallback;
 import androidx.camera.extensions.impl.service.IAdvancedExtenderImpl;
+import androidx.camera.extensions.impl.service.IPreviewExtenderImpl;
+import androidx.camera.extensions.impl.service.IImageCaptureExtenderImpl;
+
 import androidx.camera.extensions.impl.service.Size;
 
 interface IExtensionsService {
     boolean isAdvancedExtenderImplemented();
     void initialize(in String version, in IOnExtensionsInitializedCallback callback);
     void deInitialize(in IOnExtensionsDeinitializedCallback callback);
-    @nullable IAdvancedExtenderImpl initializeAdvancedExtension(int extensionType);
+    IAdvancedExtenderImpl initializeAdvancedExtension(int extensionType);
+    IPreviewExtenderImpl initializePreviewExtension(int extensionType);
+    IImageCaptureExtenderImpl initializeImageCaptureExtension(int extensionType);
 }

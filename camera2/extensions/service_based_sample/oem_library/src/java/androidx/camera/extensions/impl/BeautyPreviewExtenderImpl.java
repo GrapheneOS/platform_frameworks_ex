@@ -18,11 +18,13 @@ package androidx.camera.extensions.impl;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.util.Pair;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.extensions.impl.serviceforward.ForwardPreviewExtender;
 
 import java.util.List;
 
@@ -33,73 +35,8 @@ import java.util.List;
  *
  * @since 1.0
  */
-public final class BeautyPreviewExtenderImpl implements PreviewExtenderImpl {
+public final class BeautyPreviewExtenderImpl extends ForwardPreviewExtender {
     public BeautyPreviewExtenderImpl() {
-    }
-
-    @Override
-    public boolean isExtensionAvailable(@NonNull String cameraId,
-            @Nullable CameraCharacteristics cameraCharacteristics) {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Override
-    public void init(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics) {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @NonNull
-    @Override
-    public CaptureStageImpl getCaptureStage() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @NonNull
-    @Override
-    public ProcessorType getProcessorType() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public ProcessorImpl getProcessor() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Override
-    public void onInit(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics,
-            @NonNull Context context) {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Override
-    public void onDeInit() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onPresetSession() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onEnableSession() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onDisableSession() {
-        throw new RuntimeException("Stub, replace with implementation.");
-    }
-
-    @Nullable
-    @Override
-    public List<Pair<Integer, Size[]>> getSupportedResolutions() {
-        throw new RuntimeException("Stub, replace with implementation.");
+        super(CameraExtensionCharacteristics.EXTENSION_FACE_RETOUCH);
     }
 }

@@ -23,10 +23,13 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.camera.extensions.impl.PreviewExtenderImpl;
 import androidx.camera.extensions.impl.service.IAdvancedExtenderImpl;
 import androidx.camera.extensions.impl.service.IExtensionsService;
 import androidx.camera.extensions.impl.service.IOnExtensionsDeinitializedCallback;
 import androidx.camera.extensions.impl.service.IOnExtensionsInitializedCallback;
+import androidx.camera.extensions.impl.service.IImageCaptureExtenderImpl;
+import androidx.camera.extensions.impl.service.IPreviewExtenderImpl;
 
 public class ExtensionsService extends Service {
     private static final String TAG = "ExtensionsService";
@@ -65,6 +68,16 @@ public class ExtensionsService extends Service {
                 throws RemoteException {
             Log.d(TAG, "initializeAdvancedExtension");
             return new AdvancedExtenderImplStub(ExtensionsService.this, extensionType);
+        }
+
+        @Override
+        public IPreviewExtenderImpl initializePreviewExtension(int extensionType) {
+            return new PreviewExtenderImplStub(ExtensionsService.this, extensionType);
+        }
+
+        @Override
+        public IImageCaptureExtenderImpl initializeImageCaptureExtension(int extensionType) {
+            return new ImageCaptureExtenderImplStub(ExtensionsService.this, extensionType);
         }
     }
 }

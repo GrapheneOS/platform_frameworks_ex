@@ -31,6 +31,7 @@ import android.util.Log;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.camera.extensions.impl.service.CameraMetadataWrapper;
 import androidx.camera.extensions.impl.service.IAdvancedExtenderImpl;
 import androidx.camera.extensions.impl.service.ISessionProcessorImpl;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +51,7 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
     private Context mContext;
     private int mExtensionType;
     private String mCurrentCameraId;
-    private Map<String, CameraCharacteristics> mCharacteristicsMap = new HashMap<>();
+    private CameraCharacteristics mCameraCharacteristics;
 
     /**
      * Construct the AdvancedExtenderImplStub instance.
@@ -74,12 +76,18 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
     @Override
     public void init(@NonNull String cameraId) throws RemoteException {
         mCurrentCameraId = cameraId;
+        try {
+            CameraManager cameraManager = mContext.getSystemService(CameraManager.class);
+            mCameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
+        } catch (CameraAccessException e) {
+            throw new IllegalStateException("Cannot get CameraCharacteristics", e);
+        }
     }
 
     @Override
     @NonNull
     public LatencyRange getEstimatedCaptureLatencyRange(@NonNull String cameraId,
-            @NonNull androidx.camera.extensions.impl.service.Size outputSize,
+            @Nullable androidx.camera.extensions.impl.service.Size outputSize,
             int format) throws RemoteException {
         Log.d(TAG, "getEstimatedCaptureLatencyRange format" + format);
 
@@ -87,22 +95,6 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
         latencyRange.min = 100;
         latencyRange.max = 1000;
         return latencyRange;
-    }
-
-    private CameraCharacteristics getCameraCharacteristics(String cameraId) {
-        CameraCharacteristics characteristics = mCharacteristicsMap.get(cameraId);
-        if (characteristics != null) {
-            return characteristics;
-        }
-        try {
-            CameraManager cameraManager = mContext.getSystemService(CameraManager.class);
-            characteristics = cameraManager.getCameraCharacteristics(cameraId);
-            mCharacteristicsMap.put(cameraId, characteristics);
-            return characteristics;
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "Cannot get CameraCharacteristics", e);
-            return null;
-        }
     }
 
     private static SizeList getSupportedSizeByFormat(
@@ -128,27 +120,18 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
     @NonNull
     public List<SizeList> getSupportedPreviewOutputResolutions(@NonNull String cameraId)
             throws RemoteException {
-        CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(cameraId);
-        if (cameraCharacteristics == null) {
-            return Collections.emptyList();
-        }
-
         return Arrays.asList(
-                getSupportedSizeByFormat(cameraCharacteristics, ImageFormat.PRIVATE));
+                getSupportedSizeByFormat(mCameraCharacteristics, ImageFormat.PRIVATE));
     }
 
     @Override
     @NonNull
     public List<SizeList> getSupportedCaptureOutputResolutions(@NonNull String cameraId)
             throws RemoteException {
-        CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(cameraId);
-        if (cameraCharacteristics == null) {
-            return Collections.emptyList();
-        }
         return Arrays.asList(
-                getSupportedSizeByFormat(cameraCharacteristics,
+                getSupportedSizeByFormat(mCameraCharacteristics,
                         ImageFormat.JPEG),
-                getSupportedSizeByFormat(cameraCharacteristics,
+                getSupportedSizeByFormat(mCameraCharacteristics,
                         ImageFormat.YUV_420_888));
     }
 
@@ -156,25 +139,20 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
     @NonNull
     public List<SizeList> getSupportedYuvAnalysisResolutions(@NonNull String cameraId)
             throws RemoteException {
-        CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(cameraId);
-        if (cameraCharacteristics == null) {
-            return Collections.emptyList();
-        }
-
         return Arrays.asList(
-                getSupportedSizeByFormat(cameraCharacteristics, ImageFormat.YUV_420_888));
+                getSupportedSizeByFormat(mCameraCharacteristics, ImageFormat.YUV_420_888));
     }
 
     @Override
     @NonNull
     public ISessionProcessorImpl getSessionProcessor() throws RemoteException {
         Log.d(TAG, "getSessionProcessor");
-        return new SimpleSessionProcessorStub(getCameraCharacteristics(mCurrentCameraId),
-                getSupportedCaptureRequestKeys(mCurrentCameraId).keySet(),
-                getSupportedCaptureResultKeys(mCurrentCameraId).keySet());
+        return new SimpleSessionProcessorStub(mCameraCharacteristics,
+                getSupportedCaptureRequestKeys().keySet(),
+                getSupportedCaptureResultKeys().keySet());
     }
 
-    private Map<CaptureRequest.Key, Object> getSupportedCaptureRequestKeys(String cameraId) {
+    private Map<CaptureRequest.Key, Object> getSupportedCaptureRequestKeys() {
         Map<CaptureRequest.Key, Object> map = new HashMap<>();
         map.put(CaptureRequest.CONTROL_ZOOM_RATIO,
                 1.0f /* don't care, must not be null */);
@@ -188,8 +166,7 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
                 (byte)0 /* don't care, must not be null */);
         map.put(CaptureRequest.JPEG_ORIENTATION,
                 0 /* don't care, must not be null */);
-        if (isAfAutoSupported(cameraId)) {
-            Log.e("AAAAA", "support AF: cameraid=" + cameraId);
+        if (isAfAutoSupported()) {
             map.put(CaptureRequest.CONTROL_AF_TRIGGER,
                     0 /* don't care, must not be null */);
             map.put(CaptureRequest.CONTROL_AF_MODE,
@@ -197,10 +174,21 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
             map.put(CaptureRequest.CONTROL_AF_REGIONS,
                     new MeteringRectangle[0] /* don't care, must not be null */);
         }
+
+
+        // Filters out unsupported keys
+        List<CaptureRequest.Key<?>> camera2SupportKeys=
+                mCameraCharacteristics.getAvailableCaptureRequestKeys();
+        for (CaptureRequest.Key key : new HashSet<>(map.keySet())) {
+            if (!camera2SupportKeys.contains(key)) {
+                map.remove(key);
+            }
+        }
+
         return map;
     }
 
-    private Map<CaptureResult.Key, Object> getSupportedCaptureResultKeys(String cameraId) {
+    private Map<CaptureResult.Key, Object> getSupportedCaptureResultKeys() {
         Map<CaptureResult.Key, Object> map = new HashMap<>();
         map.put(CaptureResult.CONTROL_ZOOM_RATIO,
                 1.0f /* don't care, must not be null */);
@@ -214,7 +202,7 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
                 (byte)0 /* don't care, must not be null */);
         map.put(CaptureResult.JPEG_ORIENTATION,
                 0 /* don't care, must not be null */);
-        if (isAfAutoSupported(cameraId)) {
+        if (isAfAutoSupported()) {
             map.put(CaptureResult.CONTROL_AF_REGIONS,
                     new MeteringRectangle[0] /* don't care, must not be null */);
             map.put(CaptureResult.CONTROL_AF_TRIGGER,
@@ -224,11 +212,21 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
             map.put(CaptureResult.CONTROL_AF_STATE,
                     0 /* don't care, must not be null */);
         }
+
+        // Filters out unsupported keys
+        List<CaptureResult.Key<?>> camera2SupportKeys=
+                mCameraCharacteristics.getAvailableCaptureResultKeys();
+        for (CaptureResult.Key key : new HashSet<>(map.keySet())) {
+            if (!camera2SupportKeys.contains(key)) {
+                map.remove(key);
+            }
+        }
         return map;
     }
 
-    private boolean isAfAutoSupported(String cameraId) {
-        int[] afModes = getCameraCharacteristics(cameraId)
+
+    private boolean isAfAutoSupported() {
+        int[] afModes = mCameraCharacteristics
                 .get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
         if (afModes == null) {
             return false;
@@ -243,11 +241,11 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
     }
 
     @Override
-    public CameraMetadataWrapper getAvailableCaptureRequestKeys(String cameraId)
+    public CameraMetadataWrapper getAvailableCaptureRequestKeys()
             throws RemoteException {
         CameraMetadataWrapper cameraMetadataWrapper =
-                new CameraMetadataWrapper(getCameraCharacteristics(cameraId));
-        Map<CaptureRequest.Key, Object> keysmap = getSupportedCaptureRequestKeys(cameraId);
+                new CameraMetadataWrapper(mCameraCharacteristics);
+        Map<CaptureRequest.Key, Object> keysmap = getSupportedCaptureRequestKeys();
         for (CaptureRequest.Key key : keysmap.keySet()) {
             cameraMetadataWrapper.set(key, keysmap.get(key));
         }
@@ -256,11 +254,11 @@ public class AdvancedExtenderImplStub extends IAdvancedExtenderImpl.Stub {
     }
 
     @Override
-    public CameraMetadataWrapper getAvailableCaptureResultKeys(String cameraId)
+    public CameraMetadataWrapper getAvailableCaptureResultKeys()
             throws RemoteException {
         CameraMetadataWrapper cameraMetadataWrapper =
-                new CameraMetadataWrapper(getCameraCharacteristics(cameraId));
-        Map<CaptureResult.Key, Object> keysmap = getSupportedCaptureResultKeys(cameraId);
+                new CameraMetadataWrapper(mCameraCharacteristics);
+        Map<CaptureResult.Key, Object> keysmap = getSupportedCaptureResultKeys();
         for (CaptureResult.Key key : keysmap.keySet()) {
             cameraMetadataWrapper.set(key, keysmap.get(key));
         }

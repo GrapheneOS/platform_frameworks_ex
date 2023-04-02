@@ -84,7 +84,6 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
             throw new IllegalStateException("init failed", e);
         }
     }
-
     @Override
     @Nullable
     public Range<Long> getEstimatedCaptureLatencyRange(@NonNull String cameraId,

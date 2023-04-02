@@ -17,6 +17,7 @@ package androidx.camera.extensions.impl;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.util.Pair;
@@ -25,6 +26,7 @@ import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.extensions.impl.serviceforward.ForwardImageCaptureExtender;
 
 import java.util.List;
 
@@ -35,87 +37,8 @@ import java.util.List;
  *
  * @since 1.0
  */
-public final class BokehImageCaptureExtenderImpl implements ImageCaptureExtenderImpl {
-    public BokehImageCaptureExtenderImpl() {}
-
-    @Override
-    public boolean isExtensionAvailable(@NonNull String cameraId,
-            @Nullable CameraCharacteristics cameraCharacteristics) {
-        return true;
+public final class BokehImageCaptureExtenderImpl extends ForwardImageCaptureExtender {
+    public BokehImageCaptureExtenderImpl() {
+        super(CameraExtensionCharacteristics.EXTENSION_BOKEH);
     }
-
-    @Override
-    public void init(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics) {
-    }
-
-    @Nullable
-    @Override
-    public CaptureProcessorImpl getCaptureProcessor() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public List<CaptureStageImpl> getCaptureStages() {
-        return null;
-    }
-
-    @Override
-    public int getMaxCaptureStage() {
-        return 2;
-    }
-
-    @Override
-    public void onInit(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics,
-            @NonNull Context context) {
-    }
-
-    @Override
-    public void onDeInit() {
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onPresetSession() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onEnableSession() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onDisableSession() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public List<Pair<Integer, Size[]>> getSupportedResolutions() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Range<Long> getEstimatedCaptureLatencyRange(@Nullable Size captureOutputSize) {
-        return null;
-    }
-
-    @NonNull
-    @Override
-    public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
-        return null;
-    }
-
-    @NonNull
-    @Override
-    public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
-        return null;
-    }
-
 }

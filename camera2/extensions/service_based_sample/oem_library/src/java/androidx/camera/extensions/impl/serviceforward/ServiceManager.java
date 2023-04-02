@@ -29,6 +29,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.extensions.impl.InitializerImpl;
 import androidx.camera.extensions.impl.service.IAdvancedExtenderImpl;
+import androidx.camera.extensions.impl.service.IImageCaptureExtenderImpl;
+import androidx.camera.extensions.impl.service.IPreviewExtenderImpl;
 import androidx.camera.extensions.impl.service.IExtensionsService;
 import androidx.camera.extensions.impl.service.IOnExtensionsDeinitializedCallback;
 import androidx.camera.extensions.impl.service.IOnExtensionsInitializedCallback;
@@ -166,6 +168,36 @@ public class ServiceManager {
         } catch (RemoteException e) {
             Log.e(TAG, "initializeAdvancedExtension failed", e);
             throw new IllegalStateException("initializeAdvancedExtension failed", e);
+        }
+    }
+
+    @NonNull
+    public IImageCaptureExtenderImpl createImageCaptureExtenderImpl(int extensionType) {
+        try {
+            synchronized (mLock) {
+                if (mExtensionService == null) {
+                    bindServiceSync(mContext);
+                }
+            }
+            return mExtensionService.initializeImageCaptureExtension(extensionType);
+        } catch (RemoteException e) {
+            Log.e(TAG, "initializeImageCaptureExtender failed", e);
+            throw new IllegalStateException("initializeImageCaptureExtender failed", e);
+        }
+    }
+
+    @NonNull
+    public IPreviewExtenderImpl createPreviewExtenderImpl(int extensionType) {
+        try {
+            synchronized (mLock) {
+                if (mExtensionService == null) {
+                    bindServiceSync(mContext);
+                }
+            }
+            return mExtensionService.initializePreviewExtension(extensionType);
+        } catch (RemoteException e) {
+            Log.e(TAG, "initializePreviewExtension failed", e);
+            throw new IllegalStateException("initializePreviewExtension failed", e);
         }
     }
 }

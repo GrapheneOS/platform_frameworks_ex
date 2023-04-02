@@ -17,11 +17,13 @@ package androidx.camera.extensions.impl;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraExtensionCharacteristics;
 import android.util.Pair;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.extensions.impl.serviceforward.ForwardPreviewExtender;
 
 import java.util.List;
 
@@ -32,69 +34,8 @@ import java.util.List;
  *
  * @since 1.0
  */
-public final class BokehPreviewExtenderImpl implements PreviewExtenderImpl {
-    public BokehPreviewExtenderImpl() {}
-
-    @Override
-    public boolean isExtensionAvailable(@NonNull String cameraId,
-            @Nullable CameraCharacteristics cameraCharacteristics) {
-        return true;
-    }
-
-    @Override
-    public void init(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics) {
-    }
-
-    @NonNull
-    @Override
-    public CaptureStageImpl getCaptureStage() {
-        return null;
-    }
-
-    @NonNull
-    @Override
-    public ProcessorType getProcessorType() {
-        return ProcessorType.PROCESSOR_TYPE_NONE;
-    }
-
-    @Nullable
-    @Override
-    public ProcessorImpl getProcessor() {
-        return null;
-    }
-
-    @Override
-    public void onInit(@NonNull String cameraId,
-            @NonNull CameraCharacteristics cameraCharacteristics,
-            @NonNull Context context) {
-    }
-
-    @Override
-    public void onDeInit() {
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onPresetSession() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onEnableSession() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public CaptureStageImpl onDisableSession() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public List<Pair<Integer, Size[]>> getSupportedResolutions() {
-        return null;
+public final class BokehPreviewExtenderImpl extends ForwardPreviewExtender {
+    public BokehPreviewExtenderImpl() {
+        super(CameraExtensionCharacteristics.EXTENSION_BOKEH);
     }
 }

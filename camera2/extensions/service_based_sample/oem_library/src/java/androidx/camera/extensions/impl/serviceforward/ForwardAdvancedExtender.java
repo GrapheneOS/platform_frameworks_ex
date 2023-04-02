@@ -88,13 +88,15 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     @Override
     @Nullable
     public Range<Long> getEstimatedCaptureLatencyRange(@NonNull String cameraId,
-            @NonNull Size captureOutputSize,
+            @Nullable Size captureOutputSize,
             int imageFormat) {
         try {
-            androidx.camera.extensions.impl.service.Size size =
-                    new androidx.camera.extensions.impl.service.Size();
-            size.width = captureOutputSize.getWidth();
-            size.height = captureOutputSize.getHeight();
+            androidx.camera.extensions.impl.service.Size size = null;
+            if (captureOutputSize != null) {
+                size = new androidx.camera.extensions.impl.service.Size();
+                size.width = captureOutputSize.getWidth();
+                size.height = captureOutputSize.getHeight();
+            }
             LatencyRange latencyRange =
                     mIAdvancedExtender.getEstimatedCaptureLatencyRange(cameraId,
                             size, imageFormat);
@@ -209,7 +211,7 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
         try {
             CameraMetadataWrapper cameraMetadataWrapper
-                    = mIAdvancedExtender.getAvailableCaptureRequestKeys(mCameraId);
+                    = mIAdvancedExtender.getAvailableCaptureRequestKeys();
 
             CaptureRequest captureRequest = cameraMetadataWrapper.toCaptureRequest();
 
@@ -229,7 +231,7 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
         try {
             CameraMetadataWrapper cameraMetadataWrapper
-                    = mIAdvancedExtender.getAvailableCaptureResultKeys(mCameraId);
+                    = mIAdvancedExtender.getAvailableCaptureResultKeys();
             TotalCaptureResult captureResult = cameraMetadataWrapper.toTotalCaptureResult();
 
             List<CaptureResult.Key> result = new ArrayList<>();

@@ -31,6 +31,6 @@ interface IAdvancedExtenderImpl {
     @nullable List<SizeList> getSupportedCaptureOutputResolutions(in String cameraId);
     @nullable List<SizeList> getSupportedYuvAnalysisResolutions(in String cameraId);
     ISessionProcessorImpl getSessionProcessor();
-    CameraMetadataWrapper getAvailableCaptureRequestKeys(in String cameraId);
-    CameraMetadataWrapper getAvailableCaptureResultKeys(in String cameraId);
+    CameraMetadataWrapper getAvailableCaptureRequestKeys();
+    CameraMetadataWrapper getAvailableCaptureResultKeys();
 }

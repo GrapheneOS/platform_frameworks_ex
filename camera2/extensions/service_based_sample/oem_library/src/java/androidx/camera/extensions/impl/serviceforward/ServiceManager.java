@@ -50,30 +50,38 @@ public class ServiceManager {
     private static final Object mLock = new Object();
 
     public static void init(@Nullable Context context, @NonNull String version,
-            @NonNull InitializerImpl.OnExtensionsInitializedCallback callback,
-            @NonNull Executor executor) {
+            @Nullable InitializerImpl.OnExtensionsInitializedCallback callback,
+            @Nullable Executor executor) {
         synchronized (mLock) {
             if (sServiceManager == null) {
-                sServiceManager = new ServiceManager(context);
+                sServiceManager = new ServiceManager(context, version);
             }
             sServiceManager.bindServiceSync(context);
         }
 
         try {
+            Executor executorForCallback =
+                    (executor != null)? executor: (cmd) -> cmd.run();
+
             sServiceManager.mExtensionService.initialize(version,
                     new IOnExtensionsInitializedCallback.Stub() {
                 @Override
                 public void onSuccess() throws RemoteException {
-                    executor.execute( () -> {
-                        callback.onSuccess();
-                        Log.d(TAG, "success!");
+                    executorForCallback.execute( () -> {
+                        if (callback != null) {
+                            callback.onSuccess();
+                        }
+                        Log.d(TAG, "initialize success!");
                     });
                 }
 
                 @Override
                 public void onFailure(int error) throws RemoteException {
-                    executor.execute( () -> {
-                        callback.onFailure(error);
+                    executorForCallback.execute( () -> {
+                        if (callback != null) {
+                            callback.onFailure(error);
+                        }
+                        Log.d(TAG, "initialize failed! error=" + error);
                     });
                 }
             });
@@ -87,14 +95,16 @@ public class ServiceManager {
         return sServiceManager;
     }
 
-    public ServiceManager(@NonNull Context context) {
+    public ServiceManager(@NonNull Context context, @NonNull String version) {
         mContext = context;
+        mVersion = version;
     }
 
-    Context mContext;
+    private final Context mContext;
+    private final String mVersion;
 
-    ServiceConnection mServiceConnection;
-    IExtensionsService mExtensionService;
+    private ServiceConnection mServiceConnection;
+    private IExtensionsService mExtensionService;
 
     void bindServiceSync(Context context) {
         if (mServiceConnection == null) {
@@ -161,7 +171,7 @@ public class ServiceManager {
         try {
             synchronized (mLock) {
                 if (mExtensionService == null) {
-                    bindServiceSync(mContext);
+                    init(mContext, mVersion, null, null);
                 }
             }
             return mExtensionService.initializeAdvancedExtension(extensionType);

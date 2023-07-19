@@ -75,17 +75,16 @@ public class BokehAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
         }
 
         @Override
-        protected void addSessionParameter(Camera2SessionConfigImplBuilder builder) {
-            builder.addSessionParameter(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_SHADE);
+        protected void addRepeatingRequestParameters(RequestBuilder builder) {
+            builder.setParameters(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_SHADE);
         }
 
         @Override
         protected void addCaptureRequestParameters(List<RequestProcessorImpl.Request> requestList) {
             RequestBuilder build = new RequestBuilder(mCaptureOutputConfig.getId(),
                     CameraDevice.TEMPLATE_STILL_CAPTURE, DEFAULT_CAPTURE_ID);
-            build.setParameters(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_SHADE);
             applyParameters(build);
-
+            build.setParameters(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_SHADE);
             requestList.add(build.build());
         }
     }

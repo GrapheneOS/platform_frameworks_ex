@@ -20,7 +20,8 @@ java_library {
     name: "androidx.camera.extensions.impl.advanced",
     installable: true,
     static_libs: [
-        "androidx.annotation_annotation"
+        "androidx.annotation_annotation",
+        "androidx.exifinterface_exifinterface-nodeps"
     ],
     srcs: ["src/**/*.java"],
     sdk_version: "current",

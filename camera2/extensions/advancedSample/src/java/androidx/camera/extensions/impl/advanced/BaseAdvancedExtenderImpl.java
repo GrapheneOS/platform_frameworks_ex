@@ -16,7 +16,9 @@
 
 package androidx.camera.extensions.impl.advanced;
 
-import static androidx.camera.extensions.impl.advanced.JpegEncoder.JPEG_DEFAULT_QUALITY;
+import androidx.camera.extensions.impl.advanced.JpegEncoder;
+
+import static  androidx.camera.extensions.impl.advanced.JpegEncoder.JPEG_DEFAULT_QUALITY;
 import static androidx.camera.extensions.impl.advanced.JpegEncoder.JPEG_DEFAULT_ROTATION;
 
 import android.annotation.SuppressLint;
@@ -30,30 +32,41 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
+import android.media.Image.Plane;
 import android.media.ImageWriter;
+import android.os.Build;
 import android.util.Log;
 import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
+import android.view.Surface;
 
 import androidx.annotation.GuardedBy;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.extensions.impl.advanced.JpegEncoder;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Executor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressLint("UnknownNullness")
 public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
-    private final static int JPEG_APP_SEGMENT_SIZE = 64 * 1024;
+
+    static {
+        try {
+            System.loadLibrary("encoderjpeg_jni");
+        } catch (UnsatisfiedLinkError e) {
+            Log.e("BaseAdvancedExtenderImpl", "libencoderjpeg_jni not loaded");
+        }
+    }
+
     protected CameraCharacteristics mCameraCharacteristics;
 
     public BaseAdvancedExtenderImpl() {
@@ -198,10 +211,6 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
             // default empty implementation
         }
 
-        protected void addRepeatingRequestParameters(RequestBuilder builder) {
-            // default empty implementation
-        }
-
         @Override
         public void deInitSession() {
             synchronized (mLockCaptureSurfaceImageWriter) {
@@ -252,7 +261,6 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
             RequestBuilder builder = new RequestBuilder(mPreviewOutputConfig.getId(),
                     CameraDevice.TEMPLATE_PREVIEW, 0);
             addTriggerRequestKeys(builder, triggers);
-            addRepeatingRequestParameters(builder);
 
             final int seqId = mNextCaptureSequenceId.getAndIncrement();
 
@@ -319,9 +327,8 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                                 .setMaxImages(MAX_NUM_IMAGES)
                                 // For JPEG format, width x height should be set to (w*h) x 1
                                 // since the JPEG image is returned as a 1D byte array
-                                .setWidthAndHeight((mCaptureOutputSurfaceConfig.getSize().getWidth()
-                                        * mCaptureOutputSurfaceConfig.getSize().getHeight() * 3)/2
-                                        + JPEG_APP_SEGMENT_SIZE, 1)
+                                .setWidthAndHeight(mCaptureOutputSurfaceConfig.getSize().getWidth()
+                                        * mCaptureOutputSurfaceConfig.getSize().getHeight(), 1)
                                 .build();
                     } else {
                         mCaptureSurfaceImageWriter = new ImageWriter
@@ -348,7 +355,6 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
             RequestBuilder builder = new RequestBuilder(mPreviewOutputConfig.getId(),
                     CameraDevice.TEMPLATE_PREVIEW, 0);
             applyParameters(builder);
-            addRepeatingRequestParameters(builder);
             final int seqId = mNextCaptureSequenceId.getAndIncrement();
 
             RequestProcessorImpl.Callback callback = new RequestProcessorImpl.Callback() {
@@ -367,8 +373,9 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                 @Override
                 public void onCaptureCompleted(RequestProcessorImpl.Request request,
                         TotalCaptureResult totalCaptureResult) {
-                    captureCallback.onCaptureProcessStarted(seqId);
                     addCaptureResultKeys(seqId, totalCaptureResult, captureCallback);
+
+                    captureCallback.onCaptureProcessStarted(seqId);
                 }
 
                 @Override

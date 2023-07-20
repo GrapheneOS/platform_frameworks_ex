@@ -133,6 +133,11 @@ public class NightAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
         }
 
         @Override
+        protected void addSessionParameter(Camera2SessionConfigImplBuilder builder) {
+            builder.addSessionParameter(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_INCANDESCENT);
+        }
+
+        @Override
         public void deInitSession() {
             super.deInitSession();
 
@@ -203,8 +208,6 @@ public class NightAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
             RequestBuilder builder = new RequestBuilder(mPreviewOutputConfig.getId(),
                     CameraDevice.TEMPLATE_PREVIEW, 0);
             applyParameters(builder);
-            builder.setParameters(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_INCANDESCENT);
-
             final int seqId = mNextCaptureSequenceId.getAndIncrement();
 
             RequestProcessorImpl.Callback callback = new RequestProcessorImpl.Callback() {
@@ -264,8 +267,8 @@ public class NightAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
         protected void addCaptureRequestParameters(List<RequestProcessorImpl.Request> requestList) {
             RequestBuilder build = new RequestBuilder(mCaptureOutputConfig.getId(),
                     CameraDevice.TEMPLATE_STILL_CAPTURE, DEFAULT_CAPTURE_ID);
-            applyParameters(build);
             build.setParameters(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_INCANDESCENT);
+            applyParameters(build);
 
             requestList.add(build.build());
         }

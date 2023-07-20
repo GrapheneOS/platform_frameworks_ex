@@ -16,159 +16,121 @@
 
 package androidx.camera.extensions.impl.advanced;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.media.Image;
+import android.media.Image.Plane;
+import android.media.ImageWriter;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
-import androidx.exifinterface.media.ExifInterface;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 // Jpeg compress input YUV and queue back in the client target surface.
 public class JpegEncoder {
-    private final static String TAG = "JpegEncoder";
+
     public final static int JPEG_DEFAULT_QUALITY = 100;
     public final static int JPEG_DEFAULT_ROTATION = 0;
     public static final int HAL_PIXEL_FORMAT_BLOB = 0x21;
 
-    public static void encodeToJpeg(Image yuvInputImage, Image jpegImage,
+    /**
+     * Compresses a YCbCr image to jpeg, applying a crop and rotation.
+     * <p>
+     * The input is defined as a set of 3 planes of 8-bit samples, one plane for
+     * each channel of Y, Cb, Cr.<br>
+     * The Y plane is assumed to have the same width and height of the entire
+     * image.<br>
+     * The Cb and Cr planes are assumed to be downsampled by a factor of 2, to
+     * have dimensions (floor(width / 2), floor(height / 2)).<br>
+     * Each plane is specified by a direct java.nio.ByteBuffer, a pixel-stride,
+     * and a row-stride. So, the sample at coordinate (x, y) can be retrieved
+     * from byteBuffer[x * pixel_stride + y * row_stride].
+     * <p>
+     * The pre-compression transformation is applied as follows:
+     * <ol>
+     * <li>The image is cropped to the rectangle from (cropLeft, cropTop) to
+     * (cropRight - 1, cropBottom - 1). So, a cropping-rectangle of (0, 0) -
+     * (width, height) is a no-op.</li>
+     * <li>The rotation is applied counter-clockwise relative to the coordinate
+     * space of the image, so a CCW rotation will appear CW when the image is
+     * rendered in scanline order. Only rotations which are multiples of
+     * 90-degrees are suppored, so the parameter 'rot90' specifies which
+     * multiple of 90 to rotate the image.</li>
+     * </ol>
+     *
+     * @param width          the width of the image to compress
+     * @param height         the height of the image to compress
+     * @param yBuf           the buffer containing the Y component of the image
+     * @param yPStride       the stride between adjacent pixels in the same row in
+     *                       yBuf
+     * @param yRStride       the stride between adjacent rows in yBuf
+     * @param cbBuf          the buffer containing the Cb component of the image
+     * @param cbPStride      the stride between adjacent pixels in the same row in
+     *                       cbBuf
+     * @param cbRStride      the stride between adjacent rows in cbBuf
+     * @param crBuf          the buffer containing the Cr component of the image
+     * @param crPStride      the stride between adjacent pixels in the same row in
+     *                       crBuf
+     * @param crRStride      the stride between adjacent rows in crBuf
+     * @param outBuf         a direct java.nio.ByteBuffer to hold the compressed jpeg.
+     *                       This must have enough capacity to store the result, or an
+     *                       error code will be returned.
+     * @param outBufCapacity the capacity of outBuf
+     * @param quality        the jpeg-quality (1-100) to use
+     * @param cropLeft       left-edge of the bounds of the image to crop to before
+     *                       rotation
+     * @param cropTop        top-edge of the bounds of the image to crop to before
+     *                       rotation
+     * @param cropRight      right-edge of the bounds of the image to crop to before
+     *                       rotation
+     * @param cropBottom     bottom-edge of the bounds of the image to crop to
+     *                       before rotation
+     * @param rot90          the multiple of 90 to rotate the image CCW (after cropping)
+     */
+    public static native int compressJpegFromYUV420pNative(
+            int width, int height,
+            ByteBuffer yBuf, int yPStride, int yRStride,
+            ByteBuffer cbBuf, int cbPStride, int cbRStride,
+            ByteBuffer crBuf, int crPStride, int crRStride,
+            ByteBuffer outBuf, int outBufCapacity,
+            int quality,
+            int cropLeft, int cropTop, int cropRight, int cropBottom,
+            int rot90);
+
+    public static void encodeToJpeg(Image yuvImage, Image jpegImage,
             int jpegOrientation, int jpegQuality) {
 
-        byte[] yuvBytes = yuv_420_888toNv21(yuvInputImage);
-        YuvImage yuvImage = new YuvImage(yuvBytes, ImageFormat.NV21, yuvInputImage.getWidth(),
-                yuvInputImage.getHeight(), null);
-        File file = null;
-        try {
-            // Encode YUV to JPEG and save as a teamp file.
-            file = File.createTempFile("ExtensionsTemp", ".jpg");
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            Rect imageRect = new Rect(0, 0, yuvInputImage.getWidth(), yuvInputImage.getHeight());
-            yuvImage.compressToJpeg(imageRect, jpegQuality, fileOutputStream);
-            fileOutputStream.close();
+        jpegOrientation =  (360 - (jpegOrientation % 360)) / 90;
+        ByteBuffer jpegBuffer = jpegImage.getPlanes()[0].getBuffer();
 
-            // Update orientation EXIF on this file.
-            writeOrientationExif(file, jpegOrientation);
+        jpegBuffer.clear();
 
-            // Read the JPEG data into JPEG Image byte buffer.
-            ByteBuffer jpegBuf = jpegImage.getPlanes()[0].getBuffer();
-            readFileToByteBuffer(file, jpegBuf);
+        int jpegCapacity = jpegImage.getWidth();
 
-            // Set limits on jpeg buffer and rewind
-            jpegBuf.limit(jpegBuf.position());
-            jpegBuf.rewind();
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to encode the YUV data into a JPEG image", e);
-        } finally {
-            if (file != null) {
-                file.delete();
-            }
-        }
+        Plane lumaPlane = yuvImage.getPlanes()[0];
+
+        Plane crPlane = yuvImage.getPlanes()[1];
+        Plane cbPlane = yuvImage.getPlanes()[2];
+
+        JpegEncoder.compressJpegFromYUV420pNative(
+            yuvImage.getWidth(), yuvImage.getHeight(),
+            lumaPlane.getBuffer(), lumaPlane.getPixelStride(), lumaPlane.getRowStride(),
+            crPlane.getBuffer(), crPlane.getPixelStride(), crPlane.getRowStride(),
+            cbPlane.getBuffer(), cbPlane.getPixelStride(), cbPlane.getRowStride(),
+            jpegBuffer, jpegCapacity, jpegQuality,
+            0, 0, yuvImage.getWidth(), yuvImage.getHeight(),
+            jpegOrientation);
     }
 
-    private static void writeOrientationExif(File file, int jpegOrientation) throws IOException {
-        ExifInterface exifInterface = new ExifInterface(file);
-        int orientationEnum = ExifInterface.ORIENTATION_NORMAL;
-
-        switch (jpegOrientation) {
-            case 0:
-                orientationEnum = ExifInterface.ORIENTATION_NORMAL;
-                break;
-            case 90:
-                orientationEnum = ExifInterface.ORIENTATION_ROTATE_90;
-                break;
-            case 180:
-                orientationEnum = ExifInterface.ORIENTATION_ROTATE_180;
-                break;
-            case 270:
-                orientationEnum = ExifInterface.ORIENTATION_ROTATE_270;
-                break;
-            default:
-                Log.e(TAG, "Invalid jpeg orientation:" + jpegOrientation);
-                break;
-        }
-        exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(orientationEnum));
-        exifInterface.saveAttributes();
-    }
-
-    private static void readFileToByteBuffer(File file, ByteBuffer byteBuffer) {
-        try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                byteBuffer.put(buffer, 0, bytesRead);
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "failed to read the file into the byte buffer", e);
-        }
-    }
     public static int imageFormatToPublic(int format) {
         switch (format) {
             case HAL_PIXEL_FORMAT_BLOB:
                 return ImageFormat.JPEG;
+            case ImageFormat.JPEG:
+                throw new IllegalArgumentException(
+                        "ImageFormat.JPEG is an unknown internal format");
             default:
                 return format;
         }
-    }
-
-    @NonNull
-    private static byte[] yuv_420_888toNv21(@NonNull Image image) {
-        Image.Plane yPlane = image.getPlanes()[0];
-        Image.Plane uPlane = image.getPlanes()[1];
-        Image.Plane vPlane = image.getPlanes()[2];
-
-        ByteBuffer yBuffer = yPlane.getBuffer();
-        ByteBuffer uBuffer = uPlane.getBuffer();
-        ByteBuffer vBuffer = vPlane.getBuffer();
-        yBuffer.rewind();
-        uBuffer.rewind();
-        vBuffer.rewind();
-
-        int ySize = yBuffer.remaining();
-
-        int position = 0;
-        // TODO(b/115743986): Pull these bytes from a pool instead of allocating for every image.
-        byte[] nv21 = new byte[ySize + (image.getWidth() * image.getHeight() / 2)];
-
-        // Add the full y buffer to the array. If rowStride > 1, some padding may be skipped.
-        for (int row = 0; row < image.getHeight(); row++) {
-            yBuffer.get(nv21, position, image.getWidth());
-            position += image.getWidth();
-            yBuffer.position(
-                    Math.min(ySize, yBuffer.position() - image.getWidth() + yPlane.getRowStride()));
-        }
-
-        int chromaHeight = image.getHeight() / 2;
-        int chromaWidth = image.getWidth() / 2;
-        int vRowStride = vPlane.getRowStride();
-        int uRowStride = uPlane.getRowStride();
-        int vPixelStride = vPlane.getPixelStride();
-        int uPixelStride = uPlane.getPixelStride();
-
-        // Interleave the u and v frames, filling up the rest of the buffer. Use two line buffers to
-        // perform faster bulk gets from the byte buffers.
-        byte[] vLineBuffer = new byte[vRowStride];
-        byte[] uLineBuffer = new byte[uRowStride];
-        for (int row = 0; row < chromaHeight; row++) {
-            vBuffer.get(vLineBuffer, 0, Math.min(vRowStride, vBuffer.remaining()));
-            uBuffer.get(uLineBuffer, 0, Math.min(uRowStride, uBuffer.remaining()));
-            int vLineBufferPosition = 0;
-            int uLineBufferPosition = 0;
-            for (int col = 0; col < chromaWidth; col++) {
-                nv21[position++] = vLineBuffer[vLineBufferPosition];
-                nv21[position++] = uLineBuffer[uLineBufferPosition];
-                vLineBufferPosition += vPixelStride;
-                uLineBufferPosition += uPixelStride;
-            }
-        }
-
-        return nv21;
     }
 }

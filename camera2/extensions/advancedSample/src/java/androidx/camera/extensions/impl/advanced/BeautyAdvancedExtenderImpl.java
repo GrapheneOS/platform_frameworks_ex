@@ -69,16 +69,16 @@ public class BeautyAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
         }
 
         @Override
-        protected void addRepeatingRequestParameters(RequestBuilder builder) {
-            builder.setParameters(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_TWILIGHT);
+        protected void addSessionParameter(Camera2SessionConfigImplBuilder builder) {
+            builder.addSessionParameter(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_TWILIGHT);
         }
 
         @Override
         protected void addCaptureRequestParameters(List<RequestProcessorImpl.Request> requestList) {
             RequestBuilder build = new RequestBuilder(mCaptureOutputConfig.getId(),
                     CameraDevice.TEMPLATE_STILL_CAPTURE, DEFAULT_CAPTURE_ID);
-            applyParameters(build);
             build.setParameters(CaptureRequest.CONTROL_AWB_MODE, AWB_MODE_TWILIGHT);
+            applyParameters(build);
 
             requestList.add(build.build());
         }

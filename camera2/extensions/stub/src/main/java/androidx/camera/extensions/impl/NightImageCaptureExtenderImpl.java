@@ -95,6 +95,11 @@ public final class NightImageCaptureExtenderImpl implements ImageCaptureExtender
         throw new RuntimeException("Stub, replace with implementation.");
     }
 
+    @Override
+    public List<Pair<Integer, Size[]>> getSupportedPostviewResolutions(Size captureSize) {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
+
     @Nullable
     @Override
     public Range<Long> getEstimatedCaptureLatencyRange(@NonNull Size captureOutputSize) {
@@ -110,6 +115,26 @@ public final class NightImageCaptureExtenderImpl implements ImageCaptureExtender
     @Nullable
     @Override
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
+
+    @Override
+    public int onSessionType() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
+
+    @Override
+    public Pair<Long, Long> getRealtimeCaptureLatency() {
+        throw new RuntimeException("Stub, replace with implementation.");
+    }
+
+    @Override
+    public boolean isPostviewAvailable() {
         throw new RuntimeException("Stub, replace with implementation.");
     }
 }

@@ -116,6 +116,11 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
     }
 
     @Override
+    public Map<Integer, List<Size>> getSupportedPostviewResolutions(Size captureSize) {
+        return new HashMap<>();
+    }
+
+    @Override
     public List<Size> getSupportedYuvAnalysisResolutions(
             String cameraId) {
         return null;
@@ -161,14 +166,12 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         public Camera2SessionConfigImpl initSession(@NonNull String cameraId,
                 @NonNull Map<String, CameraCharacteristics> cameraCharacteristicsMap,
                 @NonNull Context context,
-                @NonNull OutputSurfaceImpl previewSurfaceConfig,
-                @NonNull OutputSurfaceImpl imageCaptureSurfaceConfig,
-                @Nullable OutputSurfaceImpl imageAnalysisSurfaceConfig) {
+                @NonNull OutputSurfaceConfigurationImpl surfaceConfigs) {
 
             Log.d(TAG, "initSession cameraId=" + cameraId);
 
-            mPreviewOutputSurfaceConfig = previewSurfaceConfig;
-            mCaptureOutputSurfaceConfig = imageCaptureSurfaceConfig;
+            mPreviewOutputSurfaceConfig = surfaceConfigs.getPreviewOutputSurface();
+            mCaptureOutputSurfaceConfig = surfaceConfigs.getImageCaptureOutputSurface();
 
             Camera2SessionConfigImplBuilder builder =
                     new Camera2SessionConfigImplBuilder()
@@ -180,7 +183,7 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
 
                 previewOutputConfigBuilder =
                         Camera2OutputConfigImplBuilder.newSurfaceConfig(
-                                previewSurfaceConfig.getSurface());
+                            mPreviewOutputSurfaceConfig.getSurface());
 
                 mPreviewOutputConfig = previewOutputConfigBuilder.build();
 
@@ -193,7 +196,7 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
 
                 captureOutputConfigBuilder =
                         Camera2OutputConfigImplBuilder.newImageReaderConfig(
-                                imageCaptureSurfaceConfig.getSize(),
+                                mCaptureOutputSurfaceConfig.getSize(),
                                 ImageFormat.YUV_420_888,
                                 BASIC_CAPTURE_PROCESS_MAX_IMAGES);
 
@@ -205,6 +208,24 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
             addSessionParameter(builder);
 
             return builder.build();
+        }
+
+        @Override
+        public Camera2SessionConfigImpl initSession(@NonNull String cameraId,
+                @NonNull Map<String, CameraCharacteristics> cameraCharacteristicsMap,
+                @NonNull Context context,
+                @NonNull OutputSurfaceImpl previewSurfaceConfig,
+                @NonNull OutputSurfaceImpl imageCaptureSurfaceConfig,
+                @Nullable OutputSurfaceImpl imageAnalysisSurfaceConfig) {
+
+            // Since this sample impl uses version 1.4, the other initSession method will be
+            // called. This is just a sample for earlier versions if wanting to redirect this call.
+            OutputSurfaceConfigurationImplImpl surfaceConfigs =
+                    new OutputSurfaceConfigurationImplImpl(previewSurfaceConfig,
+                    imageCaptureSurfaceConfig, imageAnalysisSurfaceConfig,
+                    null /*postviewSurfaceConfig*/);
+
+            return initSession(cameraId, cameraCharacteristicsMap, context, surfaceConfigs);
         }
 
         protected void addSessionParameter(Camera2SessionConfigImplBuilder builder) {
@@ -437,6 +458,11 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         }
 
         @Override
+        public int startCaptureWithPostview(@NonNull CaptureCallback captureCallback) {
+            return startCapture(captureCallback);
+        }
+
+        @Override
         public int startCapture(@NonNull CaptureCallback captureCallback) {
             List<RequestProcessorImpl.Request> requestList = new ArrayList<>();
             addCaptureRequestParameters(requestList);
@@ -484,6 +510,7 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
                 @Override
                 public void onCaptureSequenceCompleted(int sequenceId, long frameNumber) {
                     captureCallback.onCaptureSequenceCompleted(seqId);
+                    captureCallback.onCaptureProcessProgressed(100);
                 }
 
                 @Override
@@ -599,6 +626,48 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         public void abortCapture(int captureSequenceId) {
 
         }
+
+        @Override
+        public Pair<Long, Long> getRealtimeCaptureLatency() {
+            return null;
+        }
+    }
+
+    public static class OutputSurfaceConfigurationImplImpl implements OutputSurfaceConfigurationImpl {
+        private OutputSurfaceImpl mOutputPreviewSurfaceImpl;
+        private OutputSurfaceImpl mOutputImageCaptureSurfaceImpl;
+        private OutputSurfaceImpl mOutputImageAnalysisSurfaceImpl;
+        private OutputSurfaceImpl mOutputPostviewSurfaceImpl;
+
+        public OutputSurfaceConfigurationImplImpl(OutputSurfaceImpl previewSurfaceConfig,
+                OutputSurfaceImpl imageCaptureSurfaceConfig,
+                OutputSurfaceImpl imageAnalysisSurfaceConfig,
+                OutputSurfaceImpl postviewSurfaceConfig) {
+            mOutputPreviewSurfaceImpl = previewSurfaceConfig;
+            mOutputImageCaptureSurfaceImpl = imageCaptureSurfaceConfig;
+            mOutputImageAnalysisSurfaceImpl = imageAnalysisSurfaceConfig;
+            mOutputPostviewSurfaceImpl = postviewSurfaceConfig;
+        }
+
+        @Override
+        public OutputSurfaceImpl getPreviewOutputSurface() {
+            return mOutputPreviewSurfaceImpl;
+        }
+
+        @Override
+        public OutputSurfaceImpl getImageCaptureOutputSurface() {
+            return mOutputImageCaptureSurfaceImpl;
+        }
+
+        @Override
+        public OutputSurfaceImpl getImageAnalysisOutputSurface() {
+            return mOutputImageAnalysisSurfaceImpl;
+        }
+
+        @Override
+        public OutputSurfaceImpl getPostviewOutputSurface() {
+            return mOutputPostviewSurfaceImpl;
+        }
     }
 
     @Override
@@ -616,5 +685,15 @@ public abstract class BaseAdvancedExtenderImpl implements AdvancedExtenderImpl {
         final CaptureResult.Key [] CAPTURE_RESULT_SET = {CaptureResult.JPEG_QUALITY,
                 CaptureResult.JPEG_ORIENTATION};
         return Arrays.asList(CAPTURE_RESULT_SET);
+    }
+
+    @Override
+    public boolean isCaptureProcessProgressAvailable() {
+        return true;
+    }
+
+    @Override
+    public boolean isPostviewAvailable() {
+        return false;
     }
 }

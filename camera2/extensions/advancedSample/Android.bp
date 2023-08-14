@@ -22,9 +22,11 @@ java_library {
     static_libs: [
         "androidx.annotation_annotation"
     ],
+    exclude_kotlinc_generated_files: true,
     srcs: ["src/**/*.java"],
     sdk_version: "current",
     vendor: true,
+    jarjar_rules: "jarjar-rules.txt",
 }
 
 prebuilt_etc {

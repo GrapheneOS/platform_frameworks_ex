@@ -46,15 +46,17 @@ public class ServiceManager {
     private static final String SERVICE_SERVICE_NAME =
             "com.android.oemextensions.ExtensionsService";
 
-    private static ServiceManager sServiceManager;
+    private static ServiceManager sServiceManager = new ServiceManager();
     private static final Object mLock = new Object();
+    private static boolean sInitialized = false;
 
     public static void init(@Nullable Context context, @NonNull String version,
             @Nullable InitializerImpl.OnExtensionsInitializedCallback callback,
             @Nullable Executor executor) {
         synchronized (mLock) {
-            if (sServiceManager == null) {
+            if (!sInitialized) {
                 sServiceManager = new ServiceManager(context, version);
+                sInitialized = true;
             }
             sServiceManager.bindServiceSync(context);
         }
@@ -90,9 +92,14 @@ public class ServiceManager {
         }
     }
 
-    @NonNull
+    @Nullable
     public static ServiceManager getInstance() {
         return sServiceManager;
+    }
+
+    public ServiceManager() {
+        mContext = null;
+        mVersion = null;
     }
 
     public ServiceManager(@NonNull Context context, @NonNull String version) {
@@ -166,8 +173,12 @@ public class ServiceManager {
         }
     }
 
-    @NonNull
+    @Nullable
     public IAdvancedExtenderImpl createAdvancedExtenderImpl(int extensionType) {
+        if (mContext == null) {
+            return null;
+        }
+
         try {
             synchronized (mLock) {
                 if (mExtensionService == null) {
@@ -181,8 +192,12 @@ public class ServiceManager {
         }
     }
 
-    @NonNull
+    @Nullable
     public IImageCaptureExtenderImpl createImageCaptureExtenderImpl(int extensionType) {
+        if (mContext == null) {
+            return null;
+        }
+
         try {
             synchronized (mLock) {
                 if (mExtensionService == null) {
@@ -196,8 +211,11 @@ public class ServiceManager {
         }
     }
 
-    @NonNull
+    @Nullable
     public IPreviewExtenderImpl createPreviewExtenderImpl(int extensionType) {
+        if (mContext == null) {
+            return null;
+        }
         try {
             synchronized (mLock) {
                 if (mExtensionService == null) {

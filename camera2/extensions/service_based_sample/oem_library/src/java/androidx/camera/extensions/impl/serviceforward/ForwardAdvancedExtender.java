@@ -65,6 +65,9 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     @Override
     public boolean isExtensionAvailable(@NonNull String cameraId,
             @NonNull Map<String, CameraCharacteristics> characteristicsMap) {
+        if (mIAdvancedExtender == null) {
+            return false;
+        }
         try {
             return mIAdvancedExtender.isExtensionAvailable(cameraId);
         } catch (RemoteException e) {
@@ -76,6 +79,10 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     @Override
     public void init(@NonNull String cameraId,
             @NonNull Map<String, CameraCharacteristics> characteristicsMap) {
+        if (mIAdvancedExtender == null) {
+            return;
+        }
+
         try {
             mCameraId = cameraId;
             mIAdvancedExtender.init(cameraId);
@@ -89,6 +96,10 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     public Range<Long> getEstimatedCaptureLatencyRange(@NonNull String cameraId,
             @Nullable Size captureOutputSize,
             int imageFormat) {
+        if (mIAdvancedExtender == null) {
+            return null;
+        }
+
         try {
             androidx.camera.extensions.impl.service.Size size = null;
             if (captureOutputSize != null) {
@@ -108,6 +119,10 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
 
     @Override
     public Map<Integer, List<Size>> getSupportedPreviewOutputResolutions(String cameraId) {
+        if (mIAdvancedExtender == null) {
+            return null;
+        }
+
         try {
             List<SizeList> sizeLists = mIAdvancedExtender.getSupportedPreviewOutputResolutions(
                     cameraId);
@@ -124,6 +139,10 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
 
     @Override
     public Map<Integer, List<Size>> getSupportedCaptureOutputResolutions(String cameraId) {
+        if (mIAdvancedExtender == null) {
+            return null;
+        }
+
         try {
             List<SizeList> sizeLists = mIAdvancedExtender.getSupportedCaptureOutputResolutions(
                     cameraId);
@@ -140,6 +159,10 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
 
     @Override
     public List<Size> getSupportedYuvAnalysisResolutions(String cameraId) {
+        if (mIAdvancedExtender == null) {
+            return null;
+        }
+
         try {
             List<SizeList> sizeLists = mIAdvancedExtender.getSupportedYuvAnalysisResolutions(
                     cameraId);
@@ -208,6 +231,10 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     @Override
     @Nullable
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
+        if (mIAdvancedExtender == null) {
+            return null;
+        }
+
         try {
             CameraMetadataWrapper cameraMetadataWrapper
                     = mIAdvancedExtender.getAvailableCaptureRequestKeys();
@@ -228,6 +255,10 @@ public class ForwardAdvancedExtender implements AdvancedExtenderImpl {
     @Override
     @Nullable
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
+        if (mIAdvancedExtender == null) {
+            return null;
+        }
+
         try {
             CameraMetadataWrapper cameraMetadataWrapper
                     = mIAdvancedExtender.getAvailableCaptureResultKeys();

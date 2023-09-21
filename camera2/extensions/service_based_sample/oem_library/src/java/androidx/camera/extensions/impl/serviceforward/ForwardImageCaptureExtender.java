@@ -75,6 +75,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
     @Override
     public void onInit(String cameraId, CameraCharacteristics cameraCharacteristics,
             Context context) {
+        if (mIImageCaptureExtender == null) {
+            return;
+        }
+
         try {
             mIImageCaptureExtender.onInit(cameraId);
         } catch (RemoteException e) {
@@ -85,6 +89,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public void onDeInit() {
+        if (mIImageCaptureExtender == null) {
+            return;
+        }
+
         try {
             mIImageCaptureExtender.onDeInit();
         } catch (RemoteException e) {
@@ -95,6 +103,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public CaptureStageImpl onPresetSession() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             return convertToCaptureStageImpl(mIImageCaptureExtender.onPresetSession());
         } catch (RemoteException e) {
@@ -105,6 +117,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public CaptureStageImpl onEnableSession() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             return convertToCaptureStageImpl(mIImageCaptureExtender.onEnableSession());
         } catch (RemoteException e) {
@@ -115,6 +131,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public CaptureStageImpl onDisableSession() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             return convertToCaptureStageImpl(mIImageCaptureExtender.onDisableSession());
         } catch (RemoteException e) {
@@ -126,6 +146,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
     @Override
     public boolean isExtensionAvailable(String cameraId,
             CameraCharacteristics cameraCharacteristics) {
+        if (mIImageCaptureExtender == null) {
+            return false;
+        }
+
         try {
             return mIImageCaptureExtender.isExtensionAvailable(cameraId);
         } catch (RemoteException e) {
@@ -136,6 +160,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public void init(String cameraId, CameraCharacteristics cameraCharacteristics) {
+        if (mIImageCaptureExtender == null) {
+            return;
+        }
+
         try {
             mIImageCaptureExtender.init(cameraId);
         } catch (RemoteException e) {
@@ -146,6 +174,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public CaptureProcessorImpl getCaptureProcessor() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             ICaptureProcessorImpl captureProcessor = mIImageCaptureExtender.getCaptureProcessor();
             if (captureProcessor == null) {
@@ -160,6 +192,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public List<CaptureStageImpl> getCaptureStages() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             List<CaptureStageImpl> results = new ArrayList<>();
             for (CaptureStageImplWrapper wrapper : mIImageCaptureExtender.getCaptureStages()) {
@@ -174,6 +210,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public int getMaxCaptureStage() {
+        if (mIImageCaptureExtender == null) {
+            return 0;
+        }
+
         try {
             return mIImageCaptureExtender.getMaxCaptureStage();
         } catch (RemoteException e) {
@@ -184,6 +224,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public List<Pair<Integer, Size[]>> getSupportedResolutions() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             List<SizeList> sizes = mIImageCaptureExtender.getSupportedResolutions();
             if (sizes == null) {
@@ -208,6 +252,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public Range<Long> getEstimatedCaptureLatencyRange(Size captureOutputSize) {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             androidx.camera.extensions.impl.service.Size size = null;
             if (captureOutputSize != null) {
@@ -230,6 +278,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public List<CaptureRequest.Key> getAvailableCaptureRequestKeys() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             CameraMetadataWrapper cameraMetadataWrapper
                     = mIImageCaptureExtender.getAvailableCaptureRequestKeys();
@@ -251,6 +303,10 @@ public class ForwardImageCaptureExtender implements ImageCaptureExtenderImpl {
 
     @Override
     public List<CaptureResult.Key> getAvailableCaptureResultKeys() {
+        if (mIImageCaptureExtender == null) {
+            return null;
+        }
+
         try {
             CameraMetadataWrapper cameraMetadataWrapper
                     = mIImageCaptureExtender.getAvailableCaptureResultKeys();

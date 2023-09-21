@@ -71,6 +71,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
     @Override
     public void onInit(String cameraId, CameraCharacteristics cameraCharacteristics,
             Context context) {
+        if (mIPreviewExtender == null) {
+            return;
+        }
+
         try {
             mIPreviewExtender.onInit(cameraId);
         } catch (RemoteException e) {
@@ -81,6 +85,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public void onDeInit() {
+        if (mIPreviewExtender == null) {
+            return;
+        }
+
         try {
             mIPreviewExtender.onDeInit();
         } catch (RemoteException e) {
@@ -91,6 +99,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public CaptureStageImpl onPresetSession() {
+        if (mIPreviewExtender == null) {
+            return null;
+        }
+
         try {
             return convertToCaptureStageImpl(mIPreviewExtender.onPresetSession());
         } catch (RemoteException e) {
@@ -101,6 +113,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public CaptureStageImpl onEnableSession() {
+        if (mIPreviewExtender == null) {
+            return null;
+        }
+
         try {
             return convertToCaptureStageImpl(mIPreviewExtender.onEnableSession());
         } catch (RemoteException e) {
@@ -111,6 +127,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public CaptureStageImpl onDisableSession() {
+        if (mIPreviewExtender == null) {
+            return null;
+        }
+
         try {
             return convertToCaptureStageImpl(mIPreviewExtender.onDisableSession());
         } catch (RemoteException e) {
@@ -122,6 +142,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
     @Override
     public boolean isExtensionAvailable(String cameraId,
             CameraCharacteristics cameraCharacteristics) {
+        if (mIPreviewExtender == null) {
+            return false;
+        }
+
         try {
             return mIPreviewExtender.isExtensionAvailable(cameraId);
         } catch (RemoteException e) {
@@ -132,6 +156,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public void init(String cameraId, CameraCharacteristics cameraCharacteristics) {
+        if (mIPreviewExtender == null) {
+            return;
+        }
+
         try {
             mIPreviewExtender.init(cameraId);
         } catch (RemoteException e) {
@@ -142,6 +170,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public CaptureStageImpl getCaptureStage() {
+        if (mIPreviewExtender == null) {
+            return null;
+        }
+
         try {
             return convertToCaptureStageImpl(mIPreviewExtender.getCaptureStage());
         } catch (RemoteException e) {
@@ -152,6 +184,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public ProcessorType getProcessorType() {
+        if (mIPreviewExtender == null) {
+            return ProcessorType.PROCESSOR_TYPE_NONE;
+        }
+
         try {
             switch (mIPreviewExtender.getProcessorType()) {
                 case IPreviewExtenderImpl.PROCESSOR_TYPE_REQUEST_UPDATE_ONLY:
@@ -170,6 +206,10 @@ public class ForwardPreviewExtender implements PreviewExtenderImpl {
 
     @Override
     public ProcessorImpl getProcessor() {
+        if (mIPreviewExtender == null) {
+            return null;
+        }
+
         try {
             switch (getProcessorType()) {
                 case PROCESSOR_TYPE_REQUEST_UPDATE_ONLY:

@@ -176,6 +176,7 @@ public class HdrAdvancedExtenderImpl extends BaseAdvancedExtenderImpl {
                 @Override
                 public void onCaptureSequenceCompleted(int sequenceId, long frameNumber) {
                     captureCallback.onCaptureSequenceCompleted(seqId);
+                    captureCallback.onCaptureProcessProgressed(100);
                 }
 
                 @Override

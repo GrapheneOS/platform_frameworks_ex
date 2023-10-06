@@ -20,6 +20,7 @@ package androidx.camera.extensions.impl.advanced;
 import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.SessionConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.Map;
 @SuppressLint("UnknownNullness")
 public class Camera2SessionConfigImplBuilder {
     private int mSessionTemplateId = CameraDevice.TEMPLATE_PREVIEW;
+    private int mSessionType = SessionConfiguration.SESSION_REGULAR;
     Map<CaptureRequest.Key<?>, Object> mSessionParameters = new HashMap<>();
     List<Camera2OutputConfigImpl> mCamera2OutputConfigs = new ArrayList<>();
 
@@ -86,6 +88,13 @@ public class Camera2SessionConfigImplBuilder {
     }
 
     /**
+     * Gets the camera capture session type.
+     */
+    public int getSessionType() {
+        return mSessionType;
+    }
+
+    /**
      * Builds a {@link Camera2SessionConfigImpl} instance.
      */
     public Camera2SessionConfigImpl build() {
@@ -95,6 +104,7 @@ public class Camera2SessionConfigImplBuilder {
     private static class Camera2SessionConfigImplImpl implements
             Camera2SessionConfigImpl {
         int mSessionTemplateId;
+        int mSessionType;
         Map<CaptureRequest.Key<?>, Object> mSessionParameters;
         List<Camera2OutputConfigImpl> mCamera2OutputConfigs;
 
@@ -102,6 +112,7 @@ public class Camera2SessionConfigImplBuilder {
             mSessionTemplateId = builder.getSessionTemplateId();
             mSessionParameters = builder.getSessionParameters();
             mCamera2OutputConfigs = builder.getCamera2OutputConfigs();
+            mSessionType = builder.getSessionType();
         }
 
         @Override
@@ -117,6 +128,11 @@ public class Camera2SessionConfigImplBuilder {
         @Override
         public int getSessionTemplateId() {
             return mSessionTemplateId;
+        }
+
+        @Override
+        public int getSessionType() {
+            return mSessionType;
         }
     }
 }
